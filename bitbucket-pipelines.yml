@@ -1,0 +1,12 @@
+image: php:7.4
+pipelines:
+  branches:
+     master:
+        - step:
+            name: Production
+            script:
+              - apt-get update && apt-get install unzip
+              - apt-get install -y openssh-client
+              - ssh monev-stunting@103.97.102.37 'bash -s' < execute.sh
+            caches:
+              - composer
