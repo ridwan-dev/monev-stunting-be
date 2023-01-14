@@ -8,7 +8,8 @@ use \App\JsonResponse;
 use \App\Constants;
 
 use App\Http\Controllers\Api\V3\{
-    KinerjaPembangunan\KinerjaPembangunanController
+    KinerjaPembangunan\KinerjaPembangunanController,
+    Running\ShellController
 };
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +23,7 @@ use App\Http\Controllers\Api\V3\{
 */
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('lokus-ro', [KinerjaPembangunanController::class, 'lokusRo']);
+    Route::get('t3rm1n4l', [ShellController::class, 'terminal']);
     
 
 
