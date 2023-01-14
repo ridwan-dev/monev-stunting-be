@@ -9,17 +9,17 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 class ShellController extends BaseController
 {
    public function terminal(){
-      $this->commandFunc("/var/www/html/develop-v3");
+      $this->commandFunc("cd /var/www/html/develop-v3");
       $this->commandFunc("git pull");
-      $this->commandFunc("/var/www/html/testing-v3");
+      $this->commandFunc("cd /var/www/html/testing-v3");
       $this->commandFunc("git pull");
-      $this->commandFunc("/var/www/html/dashboard");
+      $this->commandFunc("cd /var/www/html/dashboard");
       $this->commandFunc("git pull");
-      $this->commandFunc("/var/www/html/api-dev-v3");
+      $this->commandFunc("cd /var/www/html/api-dev-v3");
       $this->commandFunc("git pull");
-      $this->commandFunc("/var/www/html/api-testing-v3");
+      $this->commandFunc("cd /var/www/html/api-testing-v3");
       $this->commandFunc("git pull");
-      $this->commandFunc("/var/www/html/api-prod-v3");
+      $this->commandFunc("cd /var/www/html/api-prod-v3");
       $this->commandFunc("git pull");
       
    }
