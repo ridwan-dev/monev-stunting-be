@@ -10,7 +10,9 @@ class ShellController extends BaseController
 {
    public function terminal(){
       //$this->commandFunc("cd /var/www/html/api-dev-v3");
-      $this->commandFunc("sh ../execute.sh");
+      //$this->commandFunc("sh ../execute.sh");
+      $this->commandFunc("cd ..");
+      $this->runPull();
       //$this->commandFunc("git config --global --add safe.directory /var/www/html/api-dev-v3");
       //$this->commandFunc("git pull origin develop");
       /* $this->commandFunc("cd /var/www/html/testing-v3");
@@ -36,6 +38,25 @@ class ShellController extends BaseController
       $return = $process->getOutput();
       echo $return;
       return $return;
+
+   }
+
+   private function runPull()
+   {
+
+      $process = new Process(['git', 'pull']);
+      $this->info("Running 'git pull'");
+
+      $process->run(function($type, $buffer) {
+         $this->pullLog[] = $buffer;
+
+         if($buffer == "Already up to date.\n") {
+               $this->alreadyUpToDate = TRUE;
+         }
+         
+      });
+
+      return $process->isSuccessful();
 
    }
 
