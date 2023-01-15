@@ -45,7 +45,7 @@ class ShellController extends BaseController
    {
 
       $process = new Process(['git', 'pull']);
-      $this->info("Running 'git pull'");
+      //$this->info("Running 'git pull'");
 
       $process->run(function($type, $buffer) {
          $this->pullLog[] = $buffer;
