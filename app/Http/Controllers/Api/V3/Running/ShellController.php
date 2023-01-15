@@ -10,10 +10,10 @@ class ShellController extends BaseController
 {
    public function terminal(){
       $this->commandFunc("cd ..");
-      $this->commandFunc("execute.sh");
+      $this->commandFunc("sh execute.sh");
       //$this->commandFunc("git config --global --add safe.directory /var/www/html/api-dev-v3");
       //$this->commandFunc("git pull origin develop");
-      $this->commandFunc("cd /var/www/html/testing-v3");
+      /* $this->commandFunc("cd /var/www/html/testing-v3");
       $this->commandFunc("git pull");
       $this->commandFunc("cd /var/www/html/dashboard");
       $this->commandFunc("git pull");
@@ -22,7 +22,7 @@ class ShellController extends BaseController
       $this->commandFunc("cd /var/www/html/api-testing-v3");
       $this->commandFunc("git pull");
       $this->commandFunc("cd /var/www/html/api-prod-v3");
-      $this->commandFunc("git pull");
+      $this->commandFunc("git pull"); */
       
    }
    
