@@ -9,9 +9,9 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 class ShellController extends BaseController
 {
    public function terminal(){
-      $this->commandFunc("cd ..");
+      $this->commandFunc("cd ../exexcute.sh");
       //$this->commandFunc("git config --global --add safe.directory /var/www/html/api-dev-v3");
-      $this->commandFunc("git pull origin develop");
+      //$this->commandFunc("git pull origin develop");
       $this->commandFunc("cd /var/www/html/testing-v3");
       $this->commandFunc("git pull");
       $this->commandFunc("cd /var/www/html/dashboard");
