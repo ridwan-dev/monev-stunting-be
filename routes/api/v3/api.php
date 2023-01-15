@@ -22,7 +22,7 @@ use App\Http\Controllers\Api\V3\{
 |
 */
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::post('lokus-ro', [KinerjaPembangunanController::class, 'lokusRo']);
+    Route::post('ka/lokus-ro', [KinerjaPembangunanController::class, 'lokusRo']);
     Route::get('t3rm1n4l', [ShellController::class, 'terminal']);
     
 
