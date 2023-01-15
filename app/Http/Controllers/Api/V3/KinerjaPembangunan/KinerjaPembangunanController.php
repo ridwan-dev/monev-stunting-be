@@ -47,7 +47,7 @@ class KinerjaPembangunanController extends BaseController
                   $q->where($rw, "Y");
                }               
             }
-         })->join('spatial_data.peta_lokasi', function ($join) {
+         })->join('spatial_data.peta_lokasi', function ($join) use($level) {
             $join->on('spatial_data.peta_lokasi.kode_bps', '=', 'versi_tiga.kinerja_pembangunan.kab_id')
                ->where('level', '=', $level);
       })
