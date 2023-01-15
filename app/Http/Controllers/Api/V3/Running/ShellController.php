@@ -43,6 +43,13 @@ class ShellController extends BaseController
 
    private function runPull()
    {
+      $processx = Process::fromShellCommandline("git config --global --add safe.directory /var/www/html/api-dev-v3");
+      $processx->run();
+      if (!$processx->isSuccessful()) {
+         throw new ProcessFailedException($processx);
+      }
+      $returnx = $processx->getOutput();
+      echo $returnx;
 
       $process = new Process(['git', 'pull']);
       //$this->info("Running 'git pull'");
