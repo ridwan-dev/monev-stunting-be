@@ -47,16 +47,24 @@ class ShellController extends BaseController
       $process = new Process(['git', 'pull']);
       //$this->info("Running 'git pull'");
 
-      $process->run(function($type, $buffer) {
+      /* $process->run(function($type, $buffer) {
          $this->pullLog[] = $buffer;
 
          if($buffer == "Already up to date.\n") {
                $this->alreadyUpToDate = TRUE;
          }
          
-      });
+      }); */
 
-      return $process->isSuccessful();
+      $process->run();
+      // executes after the command finishes
+      if (!$process->isSuccessful()) {
+         throw new ProcessFailedException($process);
+      }
+      $return = $process->getOutput();
+      echo $return;
+
+     // return $process->isSuccessful();
 
    }
 
