@@ -27,8 +27,13 @@ class KinerjaPembangunanController extends BaseController
       if($request->has('ro') && !empty($request->ro)){
             $ro = $request->ro;
       }
+      if($request->has('level') && !empty($request->level)){
+         $level = $request->level;
+      }else{
+         $level = 'district'; //province
+      }
 
-      $dataKinerjaPembangunan = KinerjaPembangunanLokus::where(function($q) use($tahun, $bulan, $semester, $ro){
+      $dataKinerjaPembangunan = KinerjaPembangunanLokus::where(function($q) use($tahun, $bulan, $semester, $ro,$level){
             if($tahun != "all"){
                $q->where('tahun', $tahun);
             }
@@ -44,7 +49,7 @@ class KinerjaPembangunanController extends BaseController
             }
          })->join('spatial_data.peta_lokasi', function ($join) {
             $join->on('spatial_data.peta_lokasi.kode_bps', '=', 'versi_tiga.kinerja_pembangunan.kab_id')
-               ->where('level', '=', 'district');
+               ->where('level', '=', $level);
       })
       ->select(['versi_tiga.kinerja_pembangunan.*','spatial_data.peta_lokasi.shape'])
       ->get();
