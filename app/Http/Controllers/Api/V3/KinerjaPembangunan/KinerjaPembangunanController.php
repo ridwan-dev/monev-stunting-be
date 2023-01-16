@@ -8,54 +8,42 @@ use App\Models\V3\KinerjaPembangunan\KinerjaPembangunanLokus ;
 use App\Models\V3\KinerjaPembangunan\KinerjaPembangunanRoIstilah ;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class KinerjaPembangunanController extends BaseController
 {
-   public function lokusRo(Request $request){
-      $tahun = now()->year;
-      $bulan = now()->month;
-      $semester = ($bulan/6) <= 6 ? 1 : 2;
-      $ro = [];
-      if($request->has('tahun') && !empty($request->tahun)){
-         $tahun = $request->tahun;
-      }
+   public function lokusRo(Request $request){     
 
-      if($request->has('semester') && !empty($request->semester)){
-         $semester = $request->semester;
-      } 
-
-      if($request->has('ro') && !empty($request->ro)){
-            $ro = $request->ro;
-      }
-      if($request->has('level') && !empty($request->level)){
-         $level = $request->level;
+      $where = $request->tahun ? " AND tahun = " . $request->tahun : "" ;
+      $request->semester ?  $where = $where . " AND semester = '" . $request->semester . "'" : $where ;
+      if($request->ro){         
+         foreach($request->ro as $ro){
+            $where = $where . " AND " . $ro . " = 'Y'";
+         }
       }else{
-         $level = 'district'; //province
+         $where = $where;
       }
 
-      $dataKinerjaPembangunan = KinerjaPembangunanLokus::where(function($q) use($tahun, $bulan, $semester, $ro,$level){
-            if($tahun != "all"){
-               $q->where('tahun', $tahun);
-            }
-
-            if($semester != "all"){
-               $q->where('semester', $semester);
-            }
-
-            if(count($ro)<58){
-               foreach($ro as $rw){
-                  $q->where($rw, "Y");
-               }               
-            }
-         })->join('spatial_data.peta_lokasi', function ($join) use($level) {
-            $join->on('spatial_data.peta_lokasi.kode_bps', '=', 'versi_tiga.kinerja_pembangunan.kab_id')
-               ->where('level', '=', $level);
-      })
-      ->select(['versi_tiga.kinerja_pembangunan.*','spatial_data.peta_lokasi.shape'])
-      ->get();
+      $results = DB::select(
+         "select 
+            json_build_object(
+               'type', 'FeatureCollection',
+               'features', json_agg(public.ST_AsGeoJSON(t.*)::json)
+            ) AS data
+         from (
+            SELECT
+               a.*,
+               kabupaten_kode,geom
+            FROM
+               versi_tiga.kinerja_pembangunan a
+            LEFT JOIN api.kabupaten b
+            ON a.kab_id = b.kabupaten_kode
+            WHERE 1 = 1" . $where . "
+         ) as t(a)"
+      );
       
       $result = [
-         "data" => $dataKinerjaPembangunan,
+         "detail" => json_decode($results[0]->data),
          "field" => KinerjaPembangunanRoIstilah::all(),
       ];
       return $this->returnJsonSuccess("Data fetched successfully", $result);
