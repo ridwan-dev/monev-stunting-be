@@ -18,7 +18,7 @@ class KinerjaPembangunanController extends BaseController
       $request->semester ?  $where = $where . " AND semester = '" . $request->semester . "'" : $where ;
       if($request->ro){         
          foreach($request->ro as $ro){
-            $where = $where . " AND " . $ro . " = 'Y'";
+            $where = $where . " OR " . $ro . " = 'Y'";
          }
       }else{
          $where = $where;
