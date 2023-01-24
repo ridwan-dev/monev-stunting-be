@@ -2,9 +2,12 @@
     <IfModule mod_negotiation.c>
         Options -MultiViews
     </IfModule>
-
+    
     RewriteEngine On
+
+    
     RewriteBase /api-prod-v3
+
     
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
