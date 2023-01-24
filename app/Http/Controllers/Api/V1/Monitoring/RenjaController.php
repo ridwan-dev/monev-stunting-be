@@ -786,7 +786,7 @@ class RenjaController extends BaseController
                                 return $obj->komponen_kode == $objKomponen->komponen_kode;
                             });  
 
-                            // dd($objKomponen);
+                            //dd($objKomponen);
                             $objKomponen->program_id = $objProgram->program_kode;
                             $objKomponen->kegiatan_id = $objKegiatan->kegiatan_kode;
                             $objKomponen->kro_id = $objOutput->output_kode;
@@ -806,41 +806,17 @@ class RenjaController extends BaseController
                             $objKomponen->target_1 = $objKomponen->target_1;
                             $objKomponen->target_2 = $objKomponen->target_2;
                             $objKomponen->target_3 = $objKomponen->target_3;
-                                
-                            return $objKomponen;
-                        });                                
-                        // $objSubOutput = (object) $objSubOutput;
-                        // $objSubOutputd = [];
-                        // $objSubOutputd['tahun'] = $objSubOutput->tahun;
-                        // $objSubOutputd['kementerian_kode'] = $objSubOutput->kementerian_kode;
-                        // $objSubOutputd['kementerian_nama'] = $objSubOutput->kementerian_nama;
-                        // $objSubOutputd['program_kode'] = $objSubOutput->program_kode;
-                        // $objSubOutputd['program_nama'] = $objSubOutput->program_nama;
-                        // $objSubOutputd['kegiatan_kode'] = $objSubOutput->kegiatan_kode;
-                        // $objSubOutputd['kegiatan_nama'] = $objSubOutput->kegiatan_nama;
-                        // $objSubOutputd['alokasi_totaloutput'] = $objSubOutput->alokasi_totaloutput;
-                        // $objSubOutputd['keterangan'] = $objSubOutput->keterangan;
-                        // $objSubOutputd['kl_id'] = $objSubOutput->kementerian_kode;
-                        // $objSubOutputd['intervensi_id'] = $objSubOutput->intervensi_kode;
-                        // $objSubOutputd['program_id'] = $objSubOutput->program_kode;
-                        // $objSubOutputd['kegiatan_id'] = $objSubOutput->kegiatan_kode;
-                        // $objSubOutputd['kro_id'] = $objSubOutput->output_kode;
-                        // $objSubOutputd['ro_id'] = $objSubOutput->suboutput_kode;
-                        // $objSubOutputd['name'] = $objSubOutput->suboutput_nama;
-                        // $objSubOutputd['jml_program'] = 0;
-                        // $objSubOutputd['jml_kegiatan'] = 0;
-                        // $objSubOutputd['jml_kro'] = 0;
-                        // $objSubOutputd['jml_ro'] = 1;
-                        $objKomponend = [];
-                        // $objSubOutputd['_children'] = $komponen->map(function($objKomponen) use (&$objKomponend){
-                        //     $objKomponen = (object) $objKomponen;
-                        //     return $objKomponend;
-                        // });                
+                            if( !is_null($objKomponen->komponen_nama)){
+                                return $objKomponen;
+                            }
+                        });  
+                        if( is_null($objSubOutput->_children[0])){
+                            unset($objSubOutput->_children);
+                        }
                         unset($objSubOutput->suboutput_kode);
                         unset($objSubOutput->suboutput_nama);
                         unset($objSubOutput->kode);
-                        unset($objSubOutput->id);        
-                        
+                        unset($objSubOutput->id);
                         return $objSubOutput;
                     })->values();
     
