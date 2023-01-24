@@ -1,0 +1,27 @@
+on:
+  push:
+    branches:
+      - 'staging'
+
+jobs:
+    deploy_job:
+      runs-on: ubuntu-latest
+      name: build&deploy
+      steps:
+        # To use this repository's private action, you must check out the repository
+        - name: Checkout
+          uses: actions/checkout@v2
+        - name: ssh pipelines
+          uses: cross-the-world/ssh-pipeline@master
+          env:
+            WELCOME: "ssh pipeline"
+          with:
+            host: ${{ secrets.DEPLOY_HOST }}
+            user: ${{ secrets.DEPLOY_USER }}
+            pass: ${{ secrets.DEPLOY_PASSWORD }}
+            port: ${{ secrets.DEPLOY_PATH }}
+            connect_timeout: 10s
+            script: |      
+                cd /var/www/html/api-testing-v3
+                git pull                
+                exit
