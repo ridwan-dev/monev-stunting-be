@@ -12,12 +12,15 @@ jobs:
         - name: Checkout
           uses: actions/checkout@v2
         - name: ssh pipelines
-          uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+          uses: cross-the-world/ssh-pipeline@master
+          env:
+            WELCOME: "ssh pipeline"
           with:
             host: ${{ secrets.DEPLOY_HOST }}
             user: ${{ secrets.DEPLOY_USER }}
             pass: ${{ secrets.DEPLOY_PASSWORD }}
-            last_ssh: |      
+            connect_timeout: 10s
+            script: |      
                 cd /var/www/html/api-dev-v3
                 git pull                
                 exit
