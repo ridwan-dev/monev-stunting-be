@@ -12,9 +12,7 @@ jobs:
         - name: Checkout
           uses: actions/checkout@v2
         - name: ssh pipelines
-          uses: cross-the-world/ssh-pipeline@master
-          env:
-            WELCOME: "ssh pipeline"
+          uses: cross-the-world/ssh-scp-ssh-pipelines@latest
           with:
             host: ${{ secrets.DEPLOY_HOST }}
             user: ${{ secrets.DEPLOY_USER }}
