@@ -17,7 +17,7 @@ jobs:
             host: ${{ secrets.DEPLOY_HOST }}
             user: ${{ secrets.DEPLOY_USER }}
             pass: ${{ secrets.DEPLOY_PASSWORD }}
-            scp: |      
+            last_ssh: |      
                 cd /var/www/html/api-dev-v3
                 git pull                
                 exit
