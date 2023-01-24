@@ -5,7 +5,7 @@
 
     RewriteEngine On
 
-    RewriteBase /api-testing-v3
+    #RewriteBase /api-testing-v3
 
 
     # Redirect Trailing Slashes If Not A Folder...
