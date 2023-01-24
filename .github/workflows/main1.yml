@@ -20,7 +20,6 @@ jobs:
             user: ${{ secrets.DEPLOY_USER }}
             pass: ${{ secrets.DEPLOY_PASSWORD }}
             port: ${{ secrets.DEPLOY_PATH }}
-            connect_timeout: 10s
             script: |      
                 cd /var/www/html/api-dev-v3
                 git pull                
