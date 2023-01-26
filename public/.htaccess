@@ -4,14 +4,8 @@
     </IfModule>
     
     RewriteEngine On
-<<<<<<< HEAD
+
     RewriteBase /api-testing-v3
-=======
-
-    
-    RewriteBase /api-prod-v3
-
->>>>>>> 0a06dc078e3b858a8c6701dbf17e77eed1d6a7df
     
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
