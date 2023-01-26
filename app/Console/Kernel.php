@@ -18,7 +18,10 @@ class Kernel extends ConsoleKernel
         Commands\KrisnaDakInterkoneksi::class,
         Commands\KrisnaRenjaInterkoneksi::class,
         Commands\TableBackupRenja::class,
-        Commands\TableSewaktuRenja::class
+        Commands\TableSewaktuRenja::class,
+        Commands\TablePemdaDak::class,
+        Commands\TableDataDak::class,
+        Commands\TableRealisasiRka::class
     ];
 
     /**
