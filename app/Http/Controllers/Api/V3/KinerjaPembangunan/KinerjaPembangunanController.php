@@ -37,14 +37,14 @@ class KinerjaPembangunanController extends BaseController
             FROM
                versi_tiga.kinerja_pembangunan a
             LEFT JOIN api.kabupaten b
-            ON a.kab_id = b.kabupaten_kode
+            ON a.kab_kode = b.kabupaten_kode
             WHERE 1 = 1" . $where . "
          ) as t(a)"
       );
       
       $result = [
          "detail" => json_decode($results[0]->data),
-         "field" => KinerjaPembangunanRoIstilah::all(),
+         "field" => KinerjaPembangunanRoIstilah::where("publish","Y")->get(),
       ];
       return $this->returnJsonSuccess("Data fetched successfully", $result);
    }
