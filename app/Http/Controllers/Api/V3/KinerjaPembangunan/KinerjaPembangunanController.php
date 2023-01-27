@@ -44,7 +44,7 @@ class KinerjaPembangunanController extends BaseController
       
       $result = [
          "detail" => json_decode($results[0]->data),
-         "field" => KinerjaPembangunanRoIstilah::all(),
+         "field" => KinerjaPembangunanRoIstilah::where("publish","Y")->get(),
       ];
       return $this->returnJsonSuccess("Data fetched successfully", $result);
    }
