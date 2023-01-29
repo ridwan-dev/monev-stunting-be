@@ -211,13 +211,18 @@ class RenjaController extends BaseController
         }else{ 
 
             if($this->checkTable('mv_krisna_renja_tematik_keyword')){
+                DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword");
+            }
+            
+            
+            /* if($this->checkTable('mv_krisna_renja_tematik_keyword')){
                 DB::statement("
                     DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword;
                 ");
             }
             DB::statement("
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword AS ".$query1.";        
-            ");
+            "); */
 
             if($this->checkTable('mv_krisna_renja_tematik_sepakati')){
                 DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati");
