@@ -141,7 +141,11 @@ class TableBackupRenja extends Command
                         $collection = new KrisnaRenja(['table' => 'krisnarenja_'.$tabel_live]);
                         foreach($komponen as $kal => $val){
                             $collection->$kal = $val;
+                            if(($tahun>2022) && ($collection->$kal == "kdunit_utama") &&  ($tabel_live=="t_progsasin")){
+                                $collection->kdunit = $val;
+                            }
                         }
+                        
                         $collection->tahun = $tahun;
                         $collection->save();
                     }
