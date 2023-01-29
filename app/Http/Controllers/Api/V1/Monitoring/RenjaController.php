@@ -210,21 +210,6 @@ class RenjaController extends BaseController
             ");
         }else{ 
 
-            if($this->checkTable('mv_krisna_renja_tematik_sepakati')){
-                DB::statement("
-                    DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati;
-                ");
-            }
-            if($this->checkTable('mv_krisna_renja_tematik_tagging')){
-                DB::statement("
-                    DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_tagging;
-                ");
-            }
-            if($this->checkTable('mv_krisna_renja_tematik_keyword_komponen')){
-                DB::statement("
-                    DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword_komponen;
-                ");
-            }
             if($this->checkTable('mv_krisna_renja_tematik_keyword')){
                 DB::statement("
                     DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword;
@@ -234,12 +219,24 @@ class RenjaController extends BaseController
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword AS ".$query1.";        
             ");
 
+            if($this->checkTable('mv_krisna_renja_tematik_sepakati')){
+                DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati");
+            }
+            if($this->checkTable('mv_krisna_renja_tematik_tagging')){
+                DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_tagging");
+            }
+            if($this->checkTable('mv_krisna_renja_tematik_keyword_komponen')){
+                DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword_komponen");
+            }
             
-            DB::statement("
-                CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword_komponen AS ".$query2."        
-            ");
+            
 
-            DB::statement("
+            
+            /* DB::statement("
+                CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword_komponen AS ".$query2."        
+            "); */
+
+            /* DB::statement("
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_tagging AS
                     SELECT * FROM renja.mv_krisna_renja_tematik_keyword_komponen aa
                     LEFT JOIN ( 
@@ -250,8 +247,8 @@ class RenjaController extends BaseController
                     ) bb
                         ON  ((aa.idro = bb.id_ro) AND (aa.tahun::varchar = bb.thn ))
                     WHERE bb.ditandai is not null                
-            ");
-            DB::statement("
+            "); */
+            /* DB::statement("
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati AS
                     SELECT * FROM renja.mv_krisna_renja_tematik_keyword_komponen aa
                     LEFT JOIN ( 
@@ -264,7 +261,7 @@ class RenjaController extends BaseController
                     WHERE 
                         bb.ditandai is not null 
                         AND disepakati is not null               
-            ");
+            "); */
         };
         RenjaUpdateDate::where("name","keyword")->update(["name"=>"keyword"]);
         return $this->returnJsonSuccess("Success Reload Rincian Output By Keywords", ["updated_at"=>RenjaUpdateDate::where("name","keyword")->first()->updated_at]);
