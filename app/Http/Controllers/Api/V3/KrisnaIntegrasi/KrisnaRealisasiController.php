@@ -16,6 +16,9 @@ class KrisnaRealisasiController extends BaseController
    public function realisasiKomponen($tahun){
       $dataK = KrisnaRealisasiRka::where('tahun',$tahun)->get();
 
+      print_r("Delete tahun ".$tahun."\n");
+      KrisnaRealisasiRkaKomponen::where('tahun',$tahun)->delete();
+
       $return = [];
       foreach($dataK as $dk){
          
@@ -23,7 +26,7 @@ class KrisnaRealisasiController extends BaseController
          if(!empty($dk->attrs['alokasis'])){
             
             foreach($dk->attrs['alokasis'] as $kmp){
-               $return[] = [
+               $returnX = [
                   "rka_komp_kode" => $tahun.$dk['kode_kl'].$dk['kode_program'].$dk['kode_kegiatan'].$dk['kode_kro'].$dk['kode_ro'].$kmp['komponen_kode'],
                   "tahun" => $tahun,
                   "kode_kl" => $dk['kode_kl'],
@@ -40,10 +43,12 @@ class KrisnaRealisasiController extends BaseController
                   "komponen_nama" => $kmp['komponen_nama'],
                   "sumber_dana_id" => $kmp['sumber_dana_id']         
                ];
+               print_r("Created ".$dk['nama_kl']."-".$kmp['komponen_nama']." tahun ".$tahun."\n");
+               KrisnaRealisasiRkaKomponen::create($returnX);
             }
          }
          else{
-            $return[] = [
+            $returnY = [
                "rka_komp_kode" => $tahun.$dk['kode_kl'].$dk['kode_program'].$dk['kode_kegiatan'].$dk['kode_kro'].$dk['kode_ro'],
                "tahun" => $tahun,
                "kode_kl" => $dk['kode_kl'],
@@ -60,13 +65,14 @@ class KrisnaRealisasiController extends BaseController
                "komponen_nama" => null,
                "sumber_dana_id" => null         
             ];
+            print_r("Created ".$dk['nama_kl']."-kosong tahun ".$tahun."\n");
+            KrisnaRealisasiRkaKomponen::create($returnY);
          }
       }
-      echo "Delete tahun ".$tahun;
-      KrisnaRealisasiRkaKomponen::where('tahun',$tahun)->delete();
+      
 
-      echo "Created tahun ".$tahun;
-      KrisnaRealisasiRkaKomponen::insert($return);
+      //print_r("Created tahun ".$tahun."\n");
+     /*  KrisnaRealisasiRkaKomponen::insert($return); */
       return $this->returnJsonSuccess("Data fetched successfully", []); 
       
 
