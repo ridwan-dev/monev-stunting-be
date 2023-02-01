@@ -23,5 +23,6 @@ jobs:
             connect_timeout: 10s
             script: |      
                 cd /var/www/html/api-prod-v3
-                git pull                
+                git pull
+                php artisan optimize                
                 exit
