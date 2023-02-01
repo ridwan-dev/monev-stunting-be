@@ -63,7 +63,9 @@ class KrisnaRealisasiController extends BaseController
          }
       }
       KrisnaRealisasiRkaKomponen::where('tahun',$tahun)->delete();
-      return KrisnaRealisasiRkaKomponen::insert($return);
+      
+      KrisnaRealisasiRkaKomponen::insert($return);
+      return $this->returnJsonSuccess("Data fetched successfully", []); 
       
 
    }
