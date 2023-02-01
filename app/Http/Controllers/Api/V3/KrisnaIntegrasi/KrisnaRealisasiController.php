@@ -44,7 +44,7 @@ class KrisnaRealisasiController extends BaseController
                   "sumber_dana_id" => $kmp['sumber_dana_id']         
                ];
                print_r("Created ".$dk['nama_kl']."-".$kmp['komponen_nama']." tahun ".$tahun."\n");
-               KrisnaRealisasiRkaKomponen::create($returnX);
+               KrisnaRealisasiRkaKomponen::insert($returnX);
             }
          }
          else{
@@ -66,7 +66,7 @@ class KrisnaRealisasiController extends BaseController
                "sumber_dana_id" => null         
             ];
             print_r("Created ".$dk['nama_kl']."-kosong tahun ".$tahun."\n");
-            KrisnaRealisasiRkaKomponen::create($returnY);
+            KrisnaRealisasiRkaKomponen::insert($returnY);
          }
       }
       
