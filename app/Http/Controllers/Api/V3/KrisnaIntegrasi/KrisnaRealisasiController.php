@@ -27,7 +27,7 @@ class KrisnaRealisasiController extends BaseController
             
             foreach($dk->attrs['alokasis'] as $kmp){
                $returnX = [
-                  "rka_komp_kode" => $tahun.$dk['kode_kl'].$dk['kode_program'].$dk['kode_kegiatan'].$dk['kode_kro'].$dk['kode_ro'].$kmp['komponen_kode'],
+                  "rka_ro_kode" => $tahun.$dk['kode_kl'].$dk['kode_program'].$dk['kode_kegiatan'].$dk['kode_kro'].$dk['kode_ro'],
                   "tahun" => $tahun,
                   "kode_kl" => $dk['kode_kl'],
                   "nama_kl" => $dk['nama_kl'],
@@ -49,7 +49,7 @@ class KrisnaRealisasiController extends BaseController
          }
          else{
             $returnY = [
-               "rka_komp_kode" => $tahun.$dk['kode_kl'].$dk['kode_program'].$dk['kode_kegiatan'].$dk['kode_kro'].$dk['kode_ro'],
+               "rka_ro_kode" => $tahun.$dk['kode_kl'].$dk['kode_program'].$dk['kode_kegiatan'].$dk['kode_kro'].$dk['kode_ro'],
                "tahun" => $tahun,
                "kode_kl" => $dk['kode_kl'],
                "nama_kl" => $dk['nama_kl'],
@@ -69,13 +69,7 @@ class KrisnaRealisasiController extends BaseController
             KrisnaRealisasiRkaKomponen::insert($returnY);
          }
       }
-      
-
-      //print_r("Created tahun ".$tahun."\n");
-     /*  KrisnaRealisasiRkaKomponen::insert($return); */
-      return $this->returnJsonSuccess("Data fetched successfully", []); 
-      
-
+      return $this->returnJsonSuccess("Data fetched successfully", []);
    }
    
    public function lokusRo(Request $request){     
