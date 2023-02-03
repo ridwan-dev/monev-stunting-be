@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 class RenjaV3Controller extends BaseController
 {
    public function getKrisnaRenjaRKA(Request $request){
-      
+      ini_set('memory_limit','-1');
       $tahun = now()->year;
       $kl = [];
       $intervensi = [];
