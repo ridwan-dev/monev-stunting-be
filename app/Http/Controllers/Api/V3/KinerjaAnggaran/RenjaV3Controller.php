@@ -11,14 +11,13 @@ use Illuminate\Support\Facades\DB;
 
 class RenjaV3Controller extends BaseController
 {
-   public function getKrisnaRenja(Request $request){
+   public function getKrisnaRenjaRKA(Request $request){
       
       $tahun = now()->year;
       $kl = [];
       $intervensi = [];
       $search = "";
       
-      //dd(MvKrisnaRealisasiRkaKomponen::get()->toArray());
       if($request->has('tahun') && !empty($request->tahun)){
          $tahun = $request->tahun;
       }
