@@ -8,6 +8,7 @@ use App\Models\V3\KrisnaIntegrasi\MvKrisnaRealisasiRkaKomponen;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Response;
 
 class RenjaV3Controller extends BaseController
 {
@@ -269,4 +270,52 @@ class RenjaV3Controller extends BaseController
       $result->detail = $lsKementerian;
       return $this->returnJsonSuccess("Data fetched successfully", $result);
    }
+
+   public function KrisnaRenjaRKAx(Request $request){
+      ini_set("memory_limit", "10056M");
+      ini_set('max_execution_time', 300);
+      $tahun = now()->year;
+      $kl = [];
+      $intervensi = [];
+      $search = "";
+      //dd("me");
+      if($request->has('tahun') && !empty($request->tahun)){
+         $tahun = $request->tahun;
+      }
+      if($request->has('kl') && !empty($request->kl)){
+         $kl = $request->kl;
+      }
+      if($request->has('search') && !empty($request->search)){
+         $search = strtolower($request->search);
+      }
+      //$allKementerian = MvKrisnaRealisasiRkaKomponen::select('kementerian_kode','kementerian_nama')->groupBy('kementerian_kode','kementerian_nama')->get();
+      //$dataRenja = MvKrisnaRealisasiRkaKomponen::where('tahun',2022)->get();
+      //$renjaClone = clone $dataRenja;
+      //return response()->json(['success'=>'true','data' => $renjaClone], 200);
+      //return $this->returnJsonSuccess("Data fetched successfully", $dataRenja);
+      $dataRenja = MvKrisnaRealisasiRkaKomponen::where(function($q) use($tahun, $kl){
+         if($tahun != "all"){
+               $q->where('tahun', $tahun);
+         }          
+         if($kl != "all"){
+               $q->whereIn('kementerian_kode', $kl);
+               //$q->whereIn('kementerian_kode', ['024']);
+         }            
+      })
+      ->where(function ($q) use($search){
+         if(!empty($search)){
+               $q->where(\DB::raw('LOWER(program_nama)'), 'LIKE', "%$search%");
+               $q->orWhere(\DB::raw('LOWER(kegiatan_nama)'), 'LIKE', "%$search%");
+               $q->orWhere(\DB::raw('LOWER(output_nama)'), 'LIKE', "%$search%");
+               $q->orWhere(\DB::raw('LOWER(suboutput_nama)'), 'LIKE', "%$search%");
+         }
+      })
+      ->get();
+      
+      
+      return $this->returnJsonSuccess("Data fetched successfully", $dataRenja); 
+   }
+
+
+
 }
