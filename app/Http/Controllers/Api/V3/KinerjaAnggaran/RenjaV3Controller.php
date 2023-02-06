@@ -27,6 +27,8 @@ class RenjaV3Controller extends BaseController
       if($request->has('search') && !empty($request->search)){
          $search = strtolower($request->search);
       }
+      return $this->returnJsonSuccess("Data fetched successfully", MvKrisnaRealisasiRkaKomponen::where('tahun',2012)->get());
+
       $allKementerian = MvKrisnaRealisasiRkaKomponen::select('kementerian_kode','kementerian_nama')->groupBy('kementerian_kode','kementerian_nama')->get();
       $dataRenja = MvKrisnaRealisasiRkaKomponen::where(function($q) use($tahun, $kl){
          if($tahun != "all"){
