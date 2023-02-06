@@ -30,24 +30,34 @@ class RenjaV3Controller extends BaseController
          $search = strtolower($request->search);
       }
       $dataRka = KrisnaRealisasiRka::where('tahun',$tahun)->get();
+      /* MvRenjaTematikKeywordSepakati sudah ada komponennya */
       $dataRenja = MvRenjaTematikKeywordSepakati::where(function($q) use($tahun, $kl){
          if($tahun != "all"){
-               $q->where('tahun', $tahun);
+            $q->where('renja.mv_krisna_renja_tematik_sepakati.tahun', $tahun);
          }          
          if($kl != "all"){
-               $q->whereIn('kementerian_kode', $kl);
+            $q->whereIn('kementerian_kode', $kl);
          }            
       })
+      ->leftJoin('versi_tiga.krisna_realisasi_rka', function($join) use($tahun)
+         {
+            $join->on('versi_tiga.krisna_realisasi_rka.kode_kl', '=', 'renja.mv_krisna_renja_tematik_sepakati.kementerian_kode')
+            ->on('versi_tiga.krisna_realisasi_rka.kode_program', '=', 'renja.mv_krisna_renja_tematik_sepakati.program_kode')
+            ->on('versi_tiga.krisna_realisasi_rka.kode_kegiatan', '=', 'renja.mv_krisna_renja_tematik_sepakati.kegiatan_kode')
+            ->on('versi_tiga.krisna_realisasi_rka.kode_kro', '=', 'renja.mv_krisna_renja_tematik_sepakati.output_kode')
+            ->on('versi_tiga.krisna_realisasi_rka.kode_ro', '=', 'renja.mv_krisna_renja_tematik_sepakati.suboutput_kode');
+            $join->where('versi_tiga.krisna_realisasi_rka.tahun', '=', $tahun);            
+         })
       ->where(function ($q) use($search){
          if(!empty($search)){
-               $q->where(\DB::raw('LOWER(program_nama)'), 'LIKE', "%$search%");
-               $q->orWhere(\DB::raw('LOWER(kegiatan_nama)'), 'LIKE', "%$search%");
-               $q->orWhere(\DB::raw('LOWER(output_nama)'), 'LIKE', "%$search%");
-               $q->orWhere(\DB::raw('LOWER(suboutput_nama)'), 'LIKE', "%$search%");
+            $q->where(\DB::raw('LOWER(program_nama)'), 'LIKE', "%$search%");
+            $q->orWhere(\DB::raw('LOWER(kegiatan_nama)'), 'LIKE', "%$search%");
+            $q->orWhere(\DB::raw('LOWER(output_nama)'), 'LIKE', "%$search%");
+            $q->orWhere(\DB::raw('LOWER(suboutput_nama)'), 'LIKE', "%$search%");
          }
       })
       ->get();
-      
+      //dd($dataRenja->toArray());
       $renjaClone = clone $dataRenja;
       $kementerianCount = $renjaClone->pluck('kementerian_kode')->unique()->values()->count();        
       $total_alokasi = MvRenjaTematikKeywordSepakati::select(\DB::raw('SUM(alokasi_totaloutput::numeric) as total_alokasi'))->where(function($q) use($tahun, $kl){
@@ -146,7 +156,7 @@ class RenjaV3Controller extends BaseController
                   $kinerjaAnggaranOutput = $kinerjaAnggaranKegiatan->filter(function ($obj) use($objOutput) {
                      return $obj->output_kode == $objOutput->output_kode;                        
                   });
-                  $lsSubOutput = $kinerjaAnggaranOutput->map->only(['tahun', 'suboutput_kode', 'suboutput_nama','alokasi_totaloutput','lokasi_ro'])->unique()->values();
+                  $lsSubOutput = $kinerjaAnggaranOutput->map->only(['tahun', 'suboutput_kode', 'suboutput_nama','alokasi_totaloutput','lokasi_ro','alokasi_lro','attrs'])->unique()->values();
    
                   $objOutput->kl_id = $objKementerian->kementerian_kode;
                   $objOutput->program_id = $objProgram->program_kode;
@@ -168,7 +178,8 @@ class RenjaV3Controller extends BaseController
                      $kinerjaAnggaranSubOutput = $kinerjaAnggaranOutput->filter(function ($obj) use($objSubOutput) {
                            return $obj->suboutput_kode == $objSubOutput->suboutput_kode;
                      });  
-                     $lsKomponen = $kinerjaAnggaranSubOutput->map->only(['tahun', 'komponen_kode', 'komponen_nama','jenis_komponen','indikator_pbj','alokasi_0','alokasi_1','alokasi_2','alokasi_3','target_0','target_1','target_2','target_3','satuan','indikator_komponen'])->unique()->values();
+                     //$lsKomponen = $kinerjaAnggaranSubOutput->map->only(['tahun', 'komponen_kode', 'komponen_nama','jenis_komponen','indikator_pbj','alokasi_0','alokasi_1','alokasi_2','alokasi_3','target_0','target_1','target_2','target_3','satuan','indikator_komponen'])->unique()->values();
+                     $lsKomponen = $kinerjaAnggaranSubOutput->map->only(['tahun', 'komponen_kode', 'komponen_nama','jenis_komponen','indikator_pbj','alokasi_0','target_0','satuan','indikator_komponen'])->unique()->values();
 
                      $objSubOutput->tahun = $objSubOutput->tahun;
                      $objSubOutput->kl_id = $objKementerian->kementerian_kode;
@@ -206,13 +217,13 @@ class RenjaV3Controller extends BaseController
                            $objKomponen->posisi = 'Komponen';
                            $objKomponen->alokasi_totaloutput = $objKomponen->alokasi_0;
                            $objKomponen->alokasi_0 = $objKomponen->alokasi_0;
-                           $objKomponen->alokasi_1 = $objKomponen->alokasi_1;
-                           $objKomponen->alokasi_2 = $objKomponen->alokasi_2;
-                           $objKomponen->alokasi_3 = $objKomponen->alokasi_3;
+                           //$objKomponen->alokasi_1 = $objKomponen->alokasi_1;
+                           //$objKomponen->alokasi_2 = $objKomponen->alokasi_2;
+                           //$objKomponen->alokasi_3 = $objKomponen->alokasi_3;
                            $objKomponen->target_0 = $objKomponen->target_0;
-                           $objKomponen->target_1 = $objKomponen->target_1;
-                           $objKomponen->target_2 = $objKomponen->target_2;
-                           $objKomponen->target_3 = $objKomponen->target_3;
+                           //$objKomponen->target_1 = $objKomponen->target_1;
+                           //$objKomponen->target_2 = $objKomponen->target_2;
+                           //$objKomponen->target_3 = $objKomponen->target_3;
                            if( !is_null($objKomponen->komponen_nama)){
                               return $objKomponen;
                            }
