@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\V3\KrisnaIntegrasi\MvKrisnaRealisasiRkaKomponen;
 use App\Models\Kinerja\MvRenjaTematikKeywordSepakati;
 use App\Models\V3\KrisnaIntegrasi\KrisnaRealisasiRka;
+use App\Models\V3\KrisnaIntegrasi\MvKrisnaRealisasiRka;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,18 @@ use Illuminate\Http\Response;
 
 class RenjaV3Controller extends BaseController
 {
+   /*
+      select a.*,b.* from renja.mv_krisna_renja_tematik_sepakati a
+      Left Join versi_tiga.krisna_realisasi_rka b
+      on b.kode_kl = a.kementerian_kode
+      and b.kode_program = a.program_kode
+      and b.kode_kegiatan = a.kegiatan_kode
+      and b.kode_kro = a.output_kode
+      and b.kode_ro = a.suboutput_kode
+      and b.tahun::text = a.tahun 
+   */
+   
+   
    public function KrisnaRenjaRKA(Request $request){
       $tahun = now()->year;
       $kl = [];
@@ -31,23 +44,14 @@ class RenjaV3Controller extends BaseController
       }
       $dataRka = KrisnaRealisasiRka::where('tahun',$tahun)->get();
       /* MvRenjaTematikKeywordSepakati sudah ada komponennya */
-      $dataRenja = MvRenjaTematikKeywordSepakati::where(function($q) use($tahun, $kl){
+      $dataRenja = MvKrisnaRealisasiRka::where(function($q) use($tahun, $kl){
          if($tahun != "all"){
-            $q->where('renja.mv_krisna_renja_tematik_sepakati.tahun', $tahun);
+            $q->where('tahun', $tahun);
          }          
          if($kl != "all"){
             $q->whereIn('kementerian_kode', $kl);
          }            
       })
-      ->leftJoin('versi_tiga.krisna_realisasi_rka', function($join) use($tahun)
-         {
-            $join->on('versi_tiga.krisna_realisasi_rka.kode_kl', '=', 'renja.mv_krisna_renja_tematik_sepakati.kementerian_kode')
-            ->on('versi_tiga.krisna_realisasi_rka.kode_program', '=', 'renja.mv_krisna_renja_tematik_sepakati.program_kode')
-            ->on('versi_tiga.krisna_realisasi_rka.kode_kegiatan', '=', 'renja.mv_krisna_renja_tematik_sepakati.kegiatan_kode')
-            ->on('versi_tiga.krisna_realisasi_rka.kode_kro', '=', 'renja.mv_krisna_renja_tematik_sepakati.output_kode')
-            ->on('versi_tiga.krisna_realisasi_rka.kode_ro', '=', 'renja.mv_krisna_renja_tematik_sepakati.suboutput_kode');
-            $join->where('versi_tiga.krisna_realisasi_rka.tahun', '=', $tahun);            
-         })
       ->where(function ($q) use($search){
          if(!empty($search)){
             $q->where(\DB::raw('LOWER(program_nama)'), 'LIKE', "%$search%");
@@ -55,9 +59,8 @@ class RenjaV3Controller extends BaseController
             $q->orWhere(\DB::raw('LOWER(output_nama)'), 'LIKE', "%$search%");
             $q->orWhere(\DB::raw('LOWER(suboutput_nama)'), 'LIKE', "%$search%");
          }
-      })
-      ->get();
-      //dd($dataRenja->toArray());
+      })->get();
+      //dd($dataRenja->toSql());
       $renjaClone = clone $dataRenja;
       $kementerianCount = $renjaClone->pluck('kementerian_kode')->unique()->values()->count();        
       $total_alokasi = MvRenjaTematikKeywordSepakati::select(\DB::raw('SUM(alokasi_totaloutput::numeric) as total_alokasi'))->where(function($q) use($tahun, $kl){
