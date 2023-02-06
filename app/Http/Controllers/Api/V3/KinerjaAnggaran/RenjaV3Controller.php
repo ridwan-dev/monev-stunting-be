@@ -290,7 +290,42 @@ class RenjaV3Controller extends BaseController
       //return $this->returnJsonSuccess("Data fetched successfully", MvKrisnaRealisasiRkaKomponen::where('tahun',2022)->get());
 
       $allKementerian = MvKrisnaRealisasiRkaKomponen::select('kementerian_kode','kementerian_nama')->groupBy('kementerian_kode','kementerian_nama')->get();
-      $dataRenja = MvKrisnaRealisasiRkaKomponen::where(function($q) use($tahun, $kl){
+      $dataRenja = MvKrisnaRealisasiRkaKomponen::select(
+         'indikator_komponen',
+         'indikator_pbj',
+         'jenis_komponen',
+         'kdtema',
+         'kdunit',
+         'kegiatan_kode',
+         'kegiatan_nama',
+         'kementerian_kode',
+         'kementerian_nama',
+         'kementerian_nama_alias',
+         'kode_ro',
+         'komponen_kode',
+         'komponen_nama',
+         'lokasi',
+         'lokasi_ro',
+         'nmprogout',
+         'nmunit',
+         'output_kode',
+         'output_nama',
+         'parent_id',
+         'program_kode',
+         'program_nama',
+         'realisasi_komponen',
+         'realisasi_ro',
+         'sat',
+         'satuan',
+         'satuan_output',
+         'suboutput_kode',
+         'suboutput_nama',
+         'sumber_dana',
+         'tahun',
+         'thang',
+         'unit_kerja_eselon1'
+         )
+      ->where(function($q) use($tahun, $kl){
          if($tahun != "all"){
                $q->where('tahun', $tahun);
          }          
