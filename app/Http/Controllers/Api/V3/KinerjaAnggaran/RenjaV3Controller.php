@@ -13,7 +13,6 @@ use Illuminate\Http\Response;
 class RenjaV3Controller extends BaseController
 {
    public function KrisnaRenjaRKA(Request $request){
-      ini_set('memory_limit','-1');
       $tahun = now()->year;
       $kl = [];
       $intervensi = [];
