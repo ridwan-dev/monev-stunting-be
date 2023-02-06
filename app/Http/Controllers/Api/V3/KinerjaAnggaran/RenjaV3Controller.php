@@ -12,7 +12,7 @@ use Illuminate\Http\Response;
 
 class RenjaV3Controller extends BaseController
 {
-   public function KrisnaRenjaRKA(Request $request){
+   public function KrisnaRenjaRKAx(Request $request){
       $tahun = now()->year;
       $kl = [];
       $intervensi = [];
@@ -272,14 +272,12 @@ class RenjaV3Controller extends BaseController
       return $this->returnJsonSuccess("Data fetched successfully", $result);
    }
 
-   public function KrisnaRenjaRKAx(Request $request){
-      ini_set("memory_limit", "10056M");
-      ini_set('max_execution_time', 300);
+   public function KrisnaRenjaRKA(Request $request){
       $tahun = now()->year;
       $kl = [];
       $intervensi = [];
       $search = "";
-      //dd("me");
+      
       if($request->has('tahun') && !empty($request->tahun)){
          $tahun = $request->tahun;
       }
@@ -289,18 +287,15 @@ class RenjaV3Controller extends BaseController
       if($request->has('search') && !empty($request->search)){
          $search = strtolower($request->search);
       }
-      //$allKementerian = MvKrisnaRealisasiRkaKomponen::select('kementerian_kode','kementerian_nama')->groupBy('kementerian_kode','kementerian_nama')->get();
-      //$dataRenja = MvKrisnaRealisasiRkaKomponen::where('tahun',2022)->get();
-      //$renjaClone = clone $dataRenja;
-      //return response()->json(['success'=>'true','data' => $renjaClone], 200);
-      //return $this->returnJsonSuccess("Data fetched successfully", $dataRenja);
+      //return $this->returnJsonSuccess("Data fetched successfully", MvKrisnaRealisasiRkaKomponen::where('tahun',2022)->get());
+
+      $allKementerian = MvKrisnaRealisasiRkaKomponen::select('kementerian_kode','kementerian_nama')->groupBy('kementerian_kode','kementerian_nama')->get();
       $dataRenja = MvKrisnaRealisasiRkaKomponen::where(function($q) use($tahun, $kl){
          if($tahun != "all"){
                $q->where('tahun', $tahun);
          }          
          if($kl != "all"){
                $q->whereIn('kementerian_kode', $kl);
-               //$q->whereIn('kementerian_kode', ['024']);
          }            
       })
       ->where(function ($q) use($search){
@@ -312,9 +307,13 @@ class RenjaV3Controller extends BaseController
          }
       })
       ->get();
+
+      $result = new \stdClass;
+      $result->data = $dataRenja;
+      $result->kementerian = $allKementerian;
+      return $this->returnJsonSuccess("Data fetched successfully", $dataRenja);
       
-      
-      return $this->returnJsonSuccess("Data fetched successfully", $dataRenja); 
+      //return $this->returnJsonSuccess("Data fetched successfully", $dataRenja); 
    }
 
 
