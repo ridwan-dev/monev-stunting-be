@@ -180,7 +180,6 @@ class RenjaController extends BaseController
             $keywords = " or ".implode(" or ",$keywords_arr);
         }
 
-        dd($keywords);
         $query1 = $this->queryRenja("mv_krisna_renja_tematik_keyword",$keywords) ; 
         $query2 = $this->queryRenja("renja_komponen",$keywords);        
         
