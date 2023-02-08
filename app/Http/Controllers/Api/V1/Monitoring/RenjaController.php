@@ -40,45 +40,48 @@ class RenjaController extends BaseController
         return $this->returnJsonSuccess("Data fetched successfully", $kementerian);
     }
 
-    //region miftah done
     public function renjatagging(Request $request){
 
-        $ditandai_list = $request->post('ditandai', []);
-        $disepakati_list = $request->post('disepakati', []);
-        //delete semua berdasarkan tahun & insert record baru
-        $tahun = $request->post('tahun', date('Y'));
-        RenjaTagging::where('tahun', $tahun)->delete();
+        $ditandai_list = $request->post('ditandai_list', []);
+        $disepakati_list = $request->post('disepakati_list', []);        
+        $ditandai = $request->post('ditandai', []);
+        $disepakati = $request->post('disepakati', []);        
+        $tahun = $request->post('tahun');
+        
+        $id_ro =  array_unique(array_merge($ditandai_list,$disepakati_list));
+        RenjaTagging::where('tahun', $tahun)
+            ->whereIn('id_ro',$ditandai_list)
+            ->delete();
 
         $records = [];
-        foreach ($ditandai_list as $id_ro) {
-            $records[$id_ro] = [
-                'id_ro' => $id_ro,
+        foreach ($id_ro as $idr) {
+            $records[] = [
+                'id_ro' => $idr,
                 'tahun' => $tahun,
-                'ditandai' => 1,
+                'ditandai' => 0,
                 'disepakati' => 0,
             ];
         }
+        
+        $result = RenjaTagging::insert($records);
 
-        foreach ($disepakati_list as $id_ro) {
-            if (isset($records[$id_ro])){ $records[$id_ro]['disepakati'] = 1; }
-            else{
-                $records[$id_ro] = [
-                    'id_ro' => $id_ro,
-                    'tahun' => $tahun,
-                    'ditandai' => 0,
-                    'disepakati' => 1,
-                ];
-            }
+        if(count($ditandai)>0){
+            RenjaTagging::where('tahun', $tahun)
+                ->whereIn('id_ro',$ditandai)
+                ->update(['ditandai' => 1]);
+        }
+        if(count($disepakati)>0){
+            RenjaTagging::where('tahun', $tahun)
+                ->whereIn('id_ro',$disepakati)
+                ->update(['disepakati' => 1]);
         }
 
-        $result = RenjaTagging::insert($records);
         DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_tagging");
         DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati");
             
         return ($result)?
             $this->returnJsonSuccess("Success Insert", []):
             $this->returnJsonError("Failed Insert", []);
-
     }
 
     public function rointervensi(Request $request)

@@ -182,7 +182,7 @@ class RenjaV3Controller extends BaseController
                            return $obj->suboutput_kode == $objSubOutput->suboutput_kode;
                      });  
                      //$lsKomponen = $kinerjaAnggaranSubOutput->map->only(['tahun', 'komponen_kode', 'komponen_nama','jenis_komponen','indikator_pbj','alokasi_0','alokasi_1','alokasi_2','alokasi_3','target_0','target_1','target_2','target_3','satuan','indikator_komponen'])->unique()->values();
-                     $lsKomponen = $kinerjaAnggaranSubOutput->map->only(['tahun', 'komponen_kode', 'komponen_nama','jenis_komponen','indikator_pbj','alokasi_0','target_0','satuan','indikator_komponen'])->unique()->values();
+                     $lsKomponen = $kinerjaAnggaranSubOutput->map->only(['tahun', 'komponen_kode', 'komponen_nama','jenis_komponen','indikator_pbj','alokasi_0','target_0','satuan','indikator_komponen','attrs'])->unique()->values();
 
                      $objSubOutput->tahun = $objSubOutput->tahun;
                      $objSubOutput->kl_id = $objKementerian->kementerian_kode;
