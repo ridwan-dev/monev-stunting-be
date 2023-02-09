@@ -880,7 +880,7 @@ class RenjaController extends BaseController
         $objKementerian->name_short = $objKementerian->kementerian_nama_short;
         unset($objKementerian->kementerian_nama_short);
         
-        $objKementerian->alokasi_totaloutput = $kinerjaAnggaranKementerian->sum('alokasi_totaloutput');
+        $objKementerian->alokasi_totaloutput = $kinerjaAnggaranKementerian->sum('alokasi_0');
         $objKementerian->keterangan = "";
         $objKementerian->jml_program = $lsProgam->count();
         $objKementerian->jml_kegiatan = $lsKegiatan->count();
@@ -901,7 +901,7 @@ class RenjaController extends BaseController
             $objProgram->kl_id = $objKementerian->kementerian_kode;
             $objProgram->program_id = $objProgram->program_kode;
             $objProgram->name = $objProgram->program_nama;
-            $objProgram->alokasi_totaloutput = $kinerjaAnggaranProgram->sum('alokasi_totaloutput');
+            $objProgram->alokasi_totaloutput = $kinerjaAnggaranProgram->sum('alokasi_0');
             $objProgram->keterangan = "";
             $objProgram->jml_program = 0;
             $objProgram->jml_kegiatan = $lsKegiatan->count();
@@ -923,7 +923,7 @@ class RenjaController extends BaseController
                 $objKegiatan->program_id = $objProgram->program_kode;
                 $objKegiatan->kegiatan_id = $objKegiatan->kegiatan_kode;
                 $objKegiatan->name = $objKegiatan->kegiatan_nama;
-                $objKegiatan->alokasi_totaloutput = $kinerjaAnggaranKegiatan->sum('alokasi_totaloutput');                
+                $objKegiatan->alokasi_totaloutput = $kinerjaAnggaranKegiatan->sum('alokasi_0');                
                 $objKegiatan->keterangan = "";
                 $objKegiatan->jml_program = 0;
                 $objKegiatan->jml_kegiatan = 1;
@@ -943,7 +943,7 @@ class RenjaController extends BaseController
                     $objOutput->kegiatan_id = $objKegiatan->kegiatan_kode;
                     $objOutput->kro_id = $objOutput->output_kode;
                     $objOutput->name = $objOutput->output_nama;            
-                    $objOutput->alokasi_totaloutput = (int) $kinerjaAnggaranOutput->sum('alokasi_totaloutput');
+                    $objOutput->alokasi_totaloutput = (int) $kinerjaAnggaranOutput->sum('alokasi_0');
                     $objOutput->keterangan = "";
                     $objOutput->jml_program = 0;
                     $objOutput->jml_kegiatan = 0;
@@ -958,7 +958,7 @@ class RenjaController extends BaseController
                         $kinerjaAnggaranSubOutput = $kinerjaAnggaranOutput->filter(function ($obj) use($objSubOutput) {
                             return $obj->suboutput_kode == $objSubOutput->suboutput_kode;
                         });  
-                        $lsKomponen = $kinerjaAnggaranSubOutput->map->only(['tahun', 'komponen_kode', 'komponen_nama','jenis_komponen','indikator_pbj','alokasi_0','alokasi_1','alokasi_2','alokasi_3','target_0','target_1','target_2','target_3','satuan','indikator_komponen'])->unique()->values();
+                        $lsKomponen = $kinerjaAnggaranSubOutput->map->only(['tahun', 'komponen_kode', 'komponen_nama','jenis_komponen','indikator_pbj','alokasi_0','alokasi_1','alokasi_2','alokasi_3','target_0','target_1','target_2','target_3','satuan','indikator_komponen','alokasi_totaloutput'])->unique()->values();
 
                         $objSubOutput->tahun = $objSubOutput->tahun;
                         $objSubOutput->kl_id = $objKementerian->kementerian_kode;
@@ -967,7 +967,7 @@ class RenjaController extends BaseController
                         $objSubOutput->kro_id = $objOutput->output_kode;
                         $objSubOutput->ro_id = $objSubOutput->suboutput_kode;
                         $objSubOutput->name = $objSubOutput->suboutput_nama;
-                        $objSubOutput->alokasi_totaloutput = (int) $objSubOutput->alokasi_totaloutput;                    
+                        $objSubOutput->alokasi_totaloutput = (int) $kinerjaAnggaranSubOutput->sum('alokasi_0');                    
                         $objSubOutput->keterangan = "";
                         $objSubOutput->jml_program = 0;
                         $objSubOutput->jml_kegiatan = 0;
@@ -1041,6 +1041,7 @@ class RenjaController extends BaseController
         $result = new \stdClass;
         $result->tile = $tile;
         $result->detail = $lsKementerian;
+    
         return $this->returnJsonSuccess("Data fetched successfully", $result);
     }
 
