@@ -40,45 +40,48 @@ class RenjaController extends BaseController
         return $this->returnJsonSuccess("Data fetched successfully", $kementerian);
     }
 
-    //region miftah done
     public function renjatagging(Request $request){
 
-        $ditandai_list = $request->post('ditandai', []);
-        $disepakati_list = $request->post('disepakati', []);
-        //delete semua berdasarkan tahun & insert record baru
-        $tahun = $request->post('tahun', date('Y'));
-        RenjaTagging::where('tahun', $tahun)->delete();
+        $ditandai_list = $request->post('ditandai_list', []);
+        $disepakati_list = $request->post('disepakati_list', []);        
+        $ditandai = $request->post('ditandai', []);
+        $disepakati = $request->post('disepakati', []);        
+        $tahun = $request->post('tahun');
+        
+        $id_ro =  array_unique(array_merge($ditandai_list,$disepakati_list));
+        RenjaTagging::where('tahun', $tahun)
+            ->whereIn('id_ro',$ditandai_list)
+            ->delete();
 
         $records = [];
-        foreach ($ditandai_list as $id_ro) {
-            $records[$id_ro] = [
-                'id_ro' => $id_ro,
+        foreach ($id_ro as $idr) {
+            $records[] = [
+                'id_ro' => $idr,
                 'tahun' => $tahun,
-                'ditandai' => 1,
+                'ditandai' => 0,
                 'disepakati' => 0,
             ];
         }
+        
+        $result = RenjaTagging::insert($records);
 
-        foreach ($disepakati_list as $id_ro) {
-            if (isset($records[$id_ro])){ $records[$id_ro]['disepakati'] = 1; }
-            else{
-                $records[$id_ro] = [
-                    'id_ro' => $id_ro,
-                    'tahun' => $tahun,
-                    'ditandai' => 0,
-                    'disepakati' => 1,
-                ];
-            }
+        if(count($ditandai)>0){
+            RenjaTagging::where('tahun', $tahun)
+                ->whereIn('id_ro',$ditandai)
+                ->update(['ditandai' => 1]);
+        }
+        if(count($disepakati)>0){
+            RenjaTagging::where('tahun', $tahun)
+                ->whereIn('id_ro',$disepakati)
+                ->update(['disepakati' => 1]);
         }
 
-        $result = RenjaTagging::insert($records);
         DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_tagging");
         DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati");
             
         return ($result)?
             $this->returnJsonSuccess("Success Insert", []):
             $this->returnJsonError("Failed Insert", []);
-
     }
 
     public function rointervensi(Request $request)
@@ -167,22 +170,8 @@ class RenjaController extends BaseController
     }
 
     public function rokeywordReload(){
-
-        /*
-            From keywords renja.krisnarenja_ro_keyword      kw
-            1. Table renja.krisnarenja_t_lokasi_suboutput   a1
-            2. Table renja.krisnarenja_ref_wilayah          c1
-            3. Table renja.krisnarenja_t_soutput            b
-            4. Table renja.krisnarenja_t_output             c 
-            5. Table renja.krisnarenja_t_giat               d
-            6. Table renja.krisnarenja_t_progout            e
-            7. Table renja.krisnarenja_t_program            f
-            8. Table api.ref_kementerian                    kl
-            9. Table renja.krisnarenja_tagging_ro           aa
-            10.Table api.ref_intervensi                     rif
-        */ 
-
-        $keywords = "";
+        
+        $keywords = "";        
         if(RenjaRoKeyword::count()>0){
             $keywords_arr = [];
             foreach (RenjaRoKeyword::all() as $row) {
@@ -192,68 +181,141 @@ class RenjaController extends BaseController
         }
 
         $query1 = $this->queryRenja("mv_krisna_renja_tematik_keyword",$keywords) ; 
-        $query2 = $this->queryRenja("renja_komponen",$keywords) ; 
+        $query2 = $this->queryRenja("renja_komponen",$keywords);        
         
-        /* $adatabel = DB::select("
-            SELECT EXISTS (
-                select * from pg_matviews where matviewname = 'mv_krisna_renja_tematik_keyword'
-            )
-        ");
-        $adatabel = $adatabel[0]->exists; */
-
         if(!$this->checkTable('mv_krisna_renja_tematik_keyword')){
+
             DB::statement("
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword AS ".$query1."        
             ");
             DB::statement("
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword_komponen AS ".$query2."        
             ");
+
         }else{ 
 
-            if($this->checkTable('mv_krisna_renja_tematik_keyword')){
-                DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword");
-            }
-            
-            
-            /* if($this->checkTable('mv_krisna_renja_tematik_keyword')){
-                DB::statement("
-                    DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword;
-                ");
-            }
+            /* Drop 
+                renja.mv_krisna_renja_lokus
+                renja.mv_krisna_renja_tematik_tagging
+                versi_tiga.mv_krisna_realisasi_rka
+                renja.mv_krisna_renja_tematik_sepakati
+                versi_tiga.mv_krisna_realisasi_rka_komponen
+                renja.mv_krisna_renja_tematik_keyword_komponen
+                renja.mv_krisna_renja_tematik_keyword
+            */
+            DB::statement("
+                DROP MATERIALIZED VIEW renja.mv_krisna_renja_lokus;
+            ");
+            DB::statement("
+                DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_tagging;
+            ");
+            DB::statement("
+                DROP MATERIALIZED VIEW versi_tiga.mv_krisna_realisasi_rka;
+            ");
+            DB::statement("
+                DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati;
+            ");
+            DB::statement("
+                DROP MATERIALIZED VIEW versi_tiga.mv_krisna_realisasi_rka_komponen;
+            ");
+            DB::statement("
+                DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword_komponen;
+            ");
+            DB::statement("
+                DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword;
+            ");
+
+            /* Create 
+                renja.mv_krisna_renja_tematik_keyword
+                renja.mv_krisna_renja_tematik_keyword_komponen
+                renja.mv_krisna_renja_tematik_sepakati
+                versi_tiga.mv_krisna_realisasi_rka
+                renja.mv_krisna_renja_tematik_tagging
+                renja.mv_krisna_renja_lokus
+            */
             DB::statement("
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword AS ".$query1.";        
-            "); */
-
-            if($this->checkTable('mv_krisna_renja_tematik_sepakati')){
-                DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati");
-            }
-            if($this->checkTable('mv_krisna_renja_tematik_tagging')){
-                DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_tagging");
-            }
-            if($this->checkTable('mv_krisna_renja_tematik_keyword_komponen')){
-                DB::statement("REFRESH MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword_komponen");
-            }
-            
-            
-
-            
-            /* DB::statement("
+            ");
+            DB::statement("
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword_komponen AS ".$query2."        
-            "); */
-
-            /* DB::statement("
-                CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_tagging AS
-                    SELECT * FROM renja.mv_krisna_renja_tematik_keyword_komponen aa
-                    LEFT JOIN ( 
-                        SELECT 
-                            id_ro,ditandai,cast(tahun AS varchar) as thn
-                        FROM renja.krisnarenja_tagging 
-                        WHERE ditandai = 1 
-                    ) bb
-                        ON  ((aa.idro = bb.id_ro) AND (aa.tahun::varchar = bb.thn ))
-                    WHERE bb.ditandai is not null                
-            "); */
-            /* DB::statement("
+            ");
+            DB::statement("
+                CREATE MATERIALIZED VIEW versi_tiga.mv_krisna_realisasi_rka_komponen AS
+                    SELECT a.idro,
+                        a.thang,
+                        a.tahun,
+                        a.parent_id,
+                        a.kementerian_kode,
+                        a.kode_ro,
+                        a.kdunit,
+                        a.program_kode,
+                        a.kegiatan_kode,
+                        a.output_kode,
+                        a.suboutput_kode,
+                        a.suboutput_nama,
+                        a.alokasi_total,
+                        a.kdtema,
+                        a.sat,
+                        a.output_nama,
+                        a.satuan_output,
+                        a.alokasi_totaloutput,
+                        a.lokasi,
+                        a.kegiatan_nama,
+                        a.nmunit,
+                        a.nmprogout,
+                        a.program_nama,
+                        a.unit_kerja_eselon1,
+                        a.kementerian_nama,
+                        a.kementerian_nama_alias,
+                        a.komponen_kode,
+                        a.komponen_nama,
+                        a.jenis_komponen,
+                        a.indikator_pbj,
+                        a.indikator_komponen,
+                        a.satuan,
+                        a.alokasi_0,
+                        a.alokasi_1,
+                        a.alokasi_2,
+                        a.alokasi_3,
+                        a.target_0,
+                        a.target_1,
+                        a.target_2,
+                        a.target_3,
+                        a.lokasi_ro,
+                        b.realisasi_ro,
+                        b.realisasi_komponen,
+                        b.sumber_dana
+                        FROM (renja.mv_krisna_renja_tematik_keyword_komponen a
+                            LEFT JOIN ( SELECT aa.id,
+                                aa.rka_ro_kode,
+                                aa.tahun,
+                                aa.kode_kl,
+                                aa.nama_kl,
+                                aa.kode_program,
+                                aa.kode_kegiatan,
+                                aa.kode_kro,
+                                aa.kode_ro,
+                                aa.kode_lro,
+                                (aa.alokasi_lro / 1000) AS realisasi_ro,
+                                (aa.alokasi / 1000) AS realisasi_komponen,
+                                aa.komponen_kode,
+                                aa.komponen_nama,
+                                aa.sumber_dana_id,
+                                aa.created_at,
+                                aa.updated_at,
+                                bb.id,
+                                bb.id_krisna,
+                                bb.alias,
+                                bb.id_sakti,
+                                bb.sumber_dana,
+                                bb.created_at,
+                                bb.updated_at
+                                FROM (versi_tiga.krisna_realisasi_rka_komponen aa
+                                    LEFT JOIN versi_tiga.krisna_sumber_dana bb 
+                                        ON ((bb.id_krisna = (aa.sumber_dana_id)::integer)))
+                                        ) b(id, rka_ro_kode, tahun, kode_kl, nama_kl, kode_program, kode_kegiatan, kode_kro, kode_ro, kode_lro, realisasi_ro, realisasi_komponen, komponen_kode, komponen_nama, sumber_dana_id, created_at, updated_at, id_1, id_krisna, alias, id_sakti, sumber_dana, created_at_1, updated_at_1) ON (((a.kode_ro = (b.rka_ro_kode)::text) AND (a.komponen_kode = (b.komponen_kode)::text))));               
+            ");            
+            DB::statement("
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati AS
                     SELECT * FROM renja.mv_krisna_renja_tematik_keyword_komponen aa
                     LEFT JOIN ( 
@@ -266,7 +328,139 @@ class RenjaController extends BaseController
                     WHERE 
                         bb.ditandai is not null 
                         AND disepakati is not null               
-            "); */
+            ");
+            DB::statement("
+                CREATE MATERIALIZED VIEW versi_tiga.mv_krisna_realisasi_rka AS
+                    SELECT 
+                        a.idro,
+                        a.thang,
+                        a.tahun,
+                        a.parent_id,
+                        a.kementerian_kode,
+                        a.kode_ro,
+                        a.kdunit,
+                        a.program_kode,
+                        a.kegiatan_kode,
+                        a.output_kode,
+                        a.suboutput_kode,
+                        a.suboutput_nama,
+                        a.alokasi_total,
+                        a.kdtema,
+                        a.sat,
+                        a.output_nama,
+                        a.satuan_output,
+                        a.alokasi_totaloutput,
+                        a.lokasi,
+                        a.kegiatan_nama,
+                        a.nmunit,
+                        a.nmprogout,
+                        a.program_nama,
+                        a.unit_kerja_eselon1,
+                        a.kementerian_nama,
+                        a.kementerian_nama_alias,
+                        a.komponen_kode,
+                        a.komponen_nama,
+                        a.jenis_komponen,
+                        a.indikator_pbj,
+                        a.indikator_komponen,
+                        a.satuan,
+                        a.alokasi_0,
+                        a.alokasi_1,
+                        a.alokasi_2,
+                        a.alokasi_3,
+                        a.target_0,
+                        a.target_1,
+                        a.target_2,
+                        a.target_3,
+                        a.lokasi_ro,
+                        a.id_ro,
+                        a.ditandai,
+                        a.disepakati,
+                        a.thn,
+                        (b.alokasi_lro / 1000) AS realisasi_ro,
+                        b.attrs
+                    FROM (renja.mv_krisna_renja_tematik_sepakati a
+                    LEFT JOIN versi_tiga.krisna_realisasi_rka b 
+                        ON (((
+                            (b.kode_kl)::text = a.kementerian_kode) 
+                            AND ((b.kode_program)::text = a.program_kode) 
+                            AND ((b.kode_kegiatan)::text = a.kegiatan_kode) 
+                            AND ((b.kode_kro)::text = a.output_kode) 
+                            AND ((b.kode_ro)::text = a.suboutput_kode) 
+                            AND ((b.tahun)::text = (a.tahun)::text)
+                            )));               
+            ");
+            DB::statement("
+                CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_tagging AS
+                    SELECT * FROM renja.mv_krisna_renja_tematik_keyword_komponen aa
+                    LEFT JOIN ( 
+                        SELECT 
+                            id_ro,ditandai,cast(tahun AS varchar) as thn
+                        FROM renja.krisnarenja_tagging 
+                        WHERE ditandai = 1 
+                    ) bb
+                        ON  ((aa.idro = bb.id_ro) AND (aa.tahun::varchar = bb.thn ))
+                    WHERE bb.ditandai is not null                
+            ");
+            DB::statement("
+                CREATE MATERIALIZED VIEW renja.mv_krisna_renja_lokus AS
+                    SELECT a.id AS idlokus,
+                        a.parent_id AS parent_ro,
+                        a.kdlokasisoutput,
+                        a.nmlokasisoutput,
+                        a.wilayah_id,
+                        a.target_0,
+                        a.target_1,
+                        a.target_2,
+                        a.target_3,
+                        a.alokasi_total AS alokasi_total_perlokus,
+                        b.idro,
+                        b.tahun,
+                        b.thang,
+                        b.kementerian_kode,
+                        b.suboutput_nama,
+                        b.alokasi_total,
+                        b.kdtema,
+                        b.sat,
+                        b.program_kode,
+                        b.output_kode,
+                        b.kegiatan_kode,
+                        b.suboutput_kode,
+                        b.output_nama,
+                        b.satuan_output,
+                        b.alokasi_totaloutput,
+                        b.lokasi,
+                        b.kegiatan_nama,
+                        b.nmunit,
+                        b.nmprogout,
+                        b.program_nama,
+                        b.unit_kerja_eselon1,
+                        b.kementerian_nama,
+                        b.kementerian_nama_alias,
+                        c.kode AS kode_lokus,
+                        c.level,
+                        c.provinsi_id,
+                        c.kabupaten_id,
+                        c.nama AS nama_lokus,
+                        c.provinsi AS provinsi_lokus,
+                        c.kabupaten AS kabupaten_lokus,
+                        c.kewenangan
+                    FROM ((renja.krisnarenja_t_lokasi_suboutput a
+                        LEFT JOIN renja.mv_krisna_renja_tematik_sepakati b 
+                            ON ((
+                                (a.parent_id = b.idro) AND ((a.tahun)::integer = (b.tahun)::integer))
+                                ))
+                        LEFT JOIN renja.krisnarenja_ref_wilayah c 
+                            ON ((
+                                (a.wilayah_id = c.id) AND ((a.tahun)::text = (c.tahun)::text))
+                            ));             
+                                ");
+
+
+
+        
+            
+            
         };
         RenjaUpdateDate::where("name","keyword")->update(["name"=>"keyword"]);
         return $this->returnJsonSuccess("Success Reload Rincian Output By Keywords", ["updated_at"=>RenjaUpdateDate::where("name","keyword")->first()->updated_at]);
@@ -280,6 +474,7 @@ class RenjaController extends BaseController
             ");
         return $adatabel = $adatabel[0]->exists;
     }
+
     private function queryRenja( $subdata, $addquery ){
         $query = "";
         if($subdata === "renja_komponen" ){
@@ -685,7 +880,7 @@ class RenjaController extends BaseController
         $objKementerian->name_short = $objKementerian->kementerian_nama_short;
         unset($objKementerian->kementerian_nama_short);
         
-        $objKementerian->alokasi_totaloutput = $kinerjaAnggaranKementerian->sum('alokasi_totaloutput');
+        $objKementerian->alokasi_totaloutput = $kinerjaAnggaranKementerian->sum('alokasi_0');
         $objKementerian->keterangan = "";
         $objKementerian->jml_program = $lsProgam->count();
         $objKementerian->jml_kegiatan = $lsKegiatan->count();
@@ -706,7 +901,7 @@ class RenjaController extends BaseController
             $objProgram->kl_id = $objKementerian->kementerian_kode;
             $objProgram->program_id = $objProgram->program_kode;
             $objProgram->name = $objProgram->program_nama;
-            $objProgram->alokasi_totaloutput = $kinerjaAnggaranProgram->sum('alokasi_totaloutput');
+            $objProgram->alokasi_totaloutput = $kinerjaAnggaranProgram->sum('alokasi_0');
             $objProgram->keterangan = "";
             $objProgram->jml_program = 0;
             $objProgram->jml_kegiatan = $lsKegiatan->count();
@@ -728,7 +923,7 @@ class RenjaController extends BaseController
                 $objKegiatan->program_id = $objProgram->program_kode;
                 $objKegiatan->kegiatan_id = $objKegiatan->kegiatan_kode;
                 $objKegiatan->name = $objKegiatan->kegiatan_nama;
-                $objKegiatan->alokasi_totaloutput = $kinerjaAnggaranKegiatan->sum('alokasi_totaloutput');                
+                $objKegiatan->alokasi_totaloutput = $kinerjaAnggaranKegiatan->sum('alokasi_0');                
                 $objKegiatan->keterangan = "";
                 $objKegiatan->jml_program = 0;
                 $objKegiatan->jml_kegiatan = 1;
@@ -748,7 +943,7 @@ class RenjaController extends BaseController
                     $objOutput->kegiatan_id = $objKegiatan->kegiatan_kode;
                     $objOutput->kro_id = $objOutput->output_kode;
                     $objOutput->name = $objOutput->output_nama;            
-                    $objOutput->alokasi_totaloutput = (int) $kinerjaAnggaranOutput->sum('alokasi_totaloutput');
+                    $objOutput->alokasi_totaloutput = (int) $kinerjaAnggaranOutput->sum('alokasi_0');
                     $objOutput->keterangan = "";
                     $objOutput->jml_program = 0;
                     $objOutput->jml_kegiatan = 0;
@@ -763,7 +958,7 @@ class RenjaController extends BaseController
                         $kinerjaAnggaranSubOutput = $kinerjaAnggaranOutput->filter(function ($obj) use($objSubOutput) {
                             return $obj->suboutput_kode == $objSubOutput->suboutput_kode;
                         });  
-                        $lsKomponen = $kinerjaAnggaranSubOutput->map->only(['tahun', 'komponen_kode', 'komponen_nama','jenis_komponen','indikator_pbj','alokasi_0','alokasi_1','alokasi_2','alokasi_3','target_0','target_1','target_2','target_3','satuan','indikator_komponen'])->unique()->values();
+                        $lsKomponen = $kinerjaAnggaranSubOutput->map->only(['tahun', 'komponen_kode', 'komponen_nama','jenis_komponen','indikator_pbj','alokasi_0','alokasi_1','alokasi_2','alokasi_3','target_0','target_1','target_2','target_3','satuan','indikator_komponen','alokasi_totaloutput'])->unique()->values();
 
                         $objSubOutput->tahun = $objSubOutput->tahun;
                         $objSubOutput->kl_id = $objKementerian->kementerian_kode;
@@ -772,7 +967,7 @@ class RenjaController extends BaseController
                         $objSubOutput->kro_id = $objOutput->output_kode;
                         $objSubOutput->ro_id = $objSubOutput->suboutput_kode;
                         $objSubOutput->name = $objSubOutput->suboutput_nama;
-                        $objSubOutput->alokasi_totaloutput = (int) $objSubOutput->alokasi_totaloutput;                    
+                        $objSubOutput->alokasi_totaloutput = (int) $kinerjaAnggaranSubOutput->sum('alokasi_0');                    
                         $objSubOutput->keterangan = "";
                         $objSubOutput->jml_program = 0;
                         $objSubOutput->jml_kegiatan = 0;
@@ -846,6 +1041,7 @@ class RenjaController extends BaseController
         $result = new \stdClass;
         $result->tile = $tile;
         $result->detail = $lsKementerian;
+    
         return $this->returnJsonSuccess("Data fetched successfully", $result);
     }
 

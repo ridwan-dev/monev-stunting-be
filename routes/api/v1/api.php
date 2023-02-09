@@ -231,8 +231,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('dampak/wastingpartial', [IndikatorStuntingController::class, 'dataWastingPartial']);
     Route::post('dampak/underweightpartial', [IndikatorStuntingController::class, 'dataUnderweightPartial']);
 
-
-
+    
 });
 
 Route::get('lokasi/by-parent/{parentId}', [LocationController::class, 'index']);

@@ -816,7 +816,7 @@ $dataTop5_detail = $dataTop5_detail->map(function ($item){
         })->get();
 
 
-        dd($dataPerkembanganPenandaan);
+        //dd($dataPerkembanganPenandaan);
 
         $dataTop5 = MvPenandaanKementerian::select('kementerian_kode', 
                                                     'kementerian_nama', 
