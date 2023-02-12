@@ -42,8 +42,11 @@ class RenjaV3Controller extends BaseController
       if($request->has('search') && !empty($request->search)){
          $search = strtolower($request->search);
       }
-      $dataRka = KrisnaRealisasiRka::where('tahun',$tahun)->get();
+      /* $dataRka = MvKrisnaRealisasiRka::where('tahun',$tahun)
+      ->whereIn('kementerian_kode', $kl)
+      ->get(); */
       /* MvRenjaTematikKeywordSepakati sudah ada komponennya */
+      //dd($dataRka->toArray());
       $dataRenja = MvKrisnaRealisasiRka::where(function($q) use($tahun, $kl){
          if($tahun != "all"){
             $q->where('tahun', $tahun);
@@ -103,7 +106,7 @@ class RenjaV3Controller extends BaseController
       $objKementerian->name_short = $objKementerian->kementerian_nama_short;
       unset($objKementerian->kementerian_nama_short);
       
-      $objKementerian->alokasi_totaloutput = $kinerjaAnggaranKementerian->sum('alokasi_totaloutput');
+      $objKementerian->alokasi_totaloutput = $kinerjaAnggaranKementerian->sum('alokasi_0');
       $objKementerian->keterangan = "";
       $objKementerian->jml_program = $lsProgam->count();
       $objKementerian->jml_kegiatan = $lsKegiatan->count();
@@ -124,7 +127,7 @@ class RenjaV3Controller extends BaseController
          $objProgram->kl_id = $objKementerian->kementerian_kode;
          $objProgram->program_id = $objProgram->program_kode;
          $objProgram->name = $objProgram->program_nama;
-         $objProgram->alokasi_totaloutput = $kinerjaAnggaranProgram->sum('alokasi_totaloutput');
+         $objProgram->alokasi_totaloutput = $kinerjaAnggaranProgram->sum('alokasi_0');
          $objProgram->keterangan = "";
          $objProgram->jml_program = 0;
          $objProgram->jml_kegiatan = $lsKegiatan->count();
@@ -146,7 +149,7 @@ class RenjaV3Controller extends BaseController
                $objKegiatan->program_id = $objProgram->program_kode;
                $objKegiatan->kegiatan_id = $objKegiatan->kegiatan_kode;
                $objKegiatan->name = $objKegiatan->kegiatan_nama;
-               $objKegiatan->alokasi_totaloutput = $kinerjaAnggaranKegiatan->sum('alokasi_totaloutput');                
+               $objKegiatan->alokasi_totaloutput = $kinerjaAnggaranKegiatan->sum('alokasi_0');                
                $objKegiatan->keterangan = "";
                $objKegiatan->jml_program = 0;
                $objKegiatan->jml_kegiatan = 1;
@@ -159,14 +162,14 @@ class RenjaV3Controller extends BaseController
                   $kinerjaAnggaranOutput = $kinerjaAnggaranKegiatan->filter(function ($obj) use($objOutput) {
                      return $obj->output_kode == $objOutput->output_kode;                        
                   });
-                  $lsSubOutput = $kinerjaAnggaranOutput->map->only(['tahun', 'suboutput_kode', 'suboutput_nama','alokasi_totaloutput','lokasi_ro','alokasi_lro','attrs'])->unique()->values();
+                  $lsSubOutput = $kinerjaAnggaranOutput->map->only(['tahun', 'suboutput_kode', 'suboutput_nama','alokasi_totaloutput','lokasi_ro','realisasi_ro'])->unique()->values();
    
                   $objOutput->kl_id = $objKementerian->kementerian_kode;
                   $objOutput->program_id = $objProgram->program_kode;
                   $objOutput->kegiatan_id = $objKegiatan->kegiatan_kode;
                   $objOutput->kro_id = $objOutput->output_kode;
                   $objOutput->name = $objOutput->output_nama;            
-                  $objOutput->alokasi_totaloutput = (int) $kinerjaAnggaranOutput->sum('alokasi_totaloutput');
+                  $objOutput->alokasi_totaloutput = (int) $kinerjaAnggaranOutput->sum('alokasi_0');
                   $objOutput->keterangan = "";
                   $objOutput->jml_program = 0;
                   $objOutput->jml_kegiatan = 0;
@@ -191,7 +194,10 @@ class RenjaV3Controller extends BaseController
                      $objSubOutput->kro_id = $objOutput->output_kode;
                      $objSubOutput->ro_id = $objSubOutput->suboutput_kode;
                      $objSubOutput->name = $objSubOutput->suboutput_nama;
-                     $objSubOutput->alokasi_totaloutput = (int) $objSubOutput->alokasi_totaloutput;                    
+                     $objSubOutput->realisasi_ro = $objSubOutput->realisasi_ro;
+                           
+                     //$objSubOutput->alokasi_totaloutput = (int) $objSubOutput->alokasi_totaloutput;                    
+                     $objSubOutput->alokasi_totaloutput = (int) ($kinerjaAnggaranSubOutput->sum('alokasi_0'));                    
                      $objSubOutput->keterangan = "";
                      $objSubOutput->jml_program = 0;
                      $objSubOutput->jml_kegiatan = 0;
@@ -218,8 +224,9 @@ class RenjaV3Controller extends BaseController
                            $objKomponen->satuan = $objKomponen->satuan;
                            $objKomponen->indikator_komponen = $objKomponen->indikator_komponen;
                            $objKomponen->posisi = 'Komponen';
-                           $objKomponen->alokasi_totaloutput = $objKomponen->alokasi_0;
-                           $objKomponen->alokasi_0 = $objKomponen->alokasi_0;
+                           $objKomponen->alokasi_totaloutput = (int)$objKomponen->alokasi_0;
+                           unset($objKomponen->alokasi_0);
+                           //$objKomponen->alokasi_0 = $objKomponen->alokasi_0;
                            //$objKomponen->alokasi_1 = $objKomponen->alokasi_1;
                            //$objKomponen->alokasi_2 = $objKomponen->alokasi_2;
                            //$objKomponen->alokasi_3 = $objKomponen->alokasi_3;
@@ -227,6 +234,8 @@ class RenjaV3Controller extends BaseController
                            //$objKomponen->target_1 = $objKomponen->target_1;
                            //$objKomponen->target_2 = $objKomponen->target_2;
                            //$objKomponen->target_3 = $objKomponen->target_3;
+                           $objKomponen->attrs = $objKomponen->attrs;
+                  
                            if( !is_null($objKomponen->komponen_nama)){
                               return $objKomponen;
                            }
@@ -265,7 +274,8 @@ class RenjaV3Controller extends BaseController
       $result = new \stdClass;
       $result->tile = $tile;
       $result->detail = $lsKementerian;
-      $result->komponenrka = $dataRka;
+      //$result->komponenrka = $dataRka;
+      //$result->komponenrka = $dataRka;
       return $this->returnJsonSuccess("Data fetched successfully", $result);
    }
 }
