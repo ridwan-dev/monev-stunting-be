@@ -932,7 +932,7 @@ class RenjaController extends BaseController
                 $objKegiatan->alokasi_totaloutput = $kinerjaAnggaranKegiatan->sum('alokasi_0');                
                 $objKegiatan->keterangan = "";
                 $objKegiatan->jml_program = 0;
-                $objKegiatan->jml_kegiatan = 1;
+                $objKegiatan->jml_kegiatan = 0;
                 $objKegiatan->jml_kro = $lsOutput->count();
                 $objKegiatan->jml_ro = $lsSubOutput->count();
                 $objKegiatan->posisi = 'Kegiatan';
@@ -953,7 +953,7 @@ class RenjaController extends BaseController
                     $objOutput->keterangan = "";
                     $objOutput->jml_program = 0;
                     $objOutput->jml_kegiatan = 0;
-                    $objOutput->jml_kro = 1;
+                    $objOutput->jml_kro = 0;
                     $objOutput->jml_ro = $lsSubOutput->count();
                     $objOutput->posisi = 'KRO';
 
