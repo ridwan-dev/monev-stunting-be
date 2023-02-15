@@ -909,7 +909,7 @@ class RenjaController extends BaseController
             $objProgram->name = $objProgram->program_nama;
             $objProgram->alokasi_totaloutput = $kinerjaAnggaranProgram->sum('alokasi_0');
             $objProgram->keterangan = "";
-            $objProgram->jml_program = 0;
+            $objProgram->jml_program = null;
             $objProgram->jml_kegiatan = $lsKegiatan->count();
             $objProgram->jml_kro = $lsOutput->count();
             $objProgram->jml_ro = $lsSubOutput->count();
@@ -931,8 +931,8 @@ class RenjaController extends BaseController
                 $objKegiatan->name = $objKegiatan->kegiatan_nama;
                 $objKegiatan->alokasi_totaloutput = $kinerjaAnggaranKegiatan->sum('alokasi_0');                
                 $objKegiatan->keterangan = "";
-                $objKegiatan->jml_program = 0;
-                $objKegiatan->jml_kegiatan = 0;
+                $objKegiatan->jml_program = null;
+                $objKegiatan->jml_kegiatan = null;
                 $objKegiatan->jml_kro = $lsOutput->count();
                 $objKegiatan->jml_ro = $lsSubOutput->count();
                 $objKegiatan->posisi = 'Kegiatan';
@@ -951,9 +951,9 @@ class RenjaController extends BaseController
                     $objOutput->name = $objOutput->output_nama;            
                     $objOutput->alokasi_totaloutput = (int) $kinerjaAnggaranOutput->sum('alokasi_0');
                     $objOutput->keterangan = "";
-                    $objOutput->jml_program = 0;
-                    $objOutput->jml_kegiatan = 0;
-                    $objOutput->jml_kro = 0;
+                    $objOutput->jml_program = null;
+                    $objOutput->jml_kegiatan = null;
+                    $objOutput->jml_kro = null;
                     $objOutput->jml_ro = $lsSubOutput->count();
                     $objOutput->posisi = 'KRO';
 
@@ -975,10 +975,10 @@ class RenjaController extends BaseController
                         $objSubOutput->name = $objSubOutput->suboutput_nama;
                         $objSubOutput->alokasi_totaloutput = (int) $kinerjaAnggaranSubOutput->sum('alokasi_0');                    
                         $objSubOutput->keterangan = "";
-                        $objSubOutput->jml_program = 0;
-                        $objSubOutput->jml_kegiatan = 0;
-                        $objSubOutput->jml_kro = 0;
-                        $objSubOutput->jml_ro = 1;
+                        $objSubOutput->jml_program = null;
+                        $objSubOutput->jml_kegiatan = null;
+                        $objSubOutput->jml_kro = null;
+                        $objSubOutput->jml_ro = null;
                         $objSubOutput->jml_komponen = $lsKomponen->count();                        
                         $objSubOutput->lokasi_ro = json_decode($objSubOutput->lokasi_ro, true, JSON_UNESCAPED_SLASHES);
                         $objSubOutput->posisi = 'RO';
