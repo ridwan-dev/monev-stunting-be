@@ -890,7 +890,7 @@ class RenjaController extends BaseController
         $objKementerian->name_short = $objKementerian->kementerian_nama_short;
         unset($objKementerian->kementerian_nama_short);
         
-        $objKementerian->alokasi_totaloutput = $kinerjaAnggaranKementerian->sum('alokasi_0');
+        $objKementerian->alokasi_totaloutput = $kinerjaAnggaranKementerian->sum('alokasi_total');
         $objKementerian->keterangan = "";
         $objKementerian->jml_program = $lsProgam->count();
         $objKementerian->jml_kegiatan = $lsKegiatan->count();
