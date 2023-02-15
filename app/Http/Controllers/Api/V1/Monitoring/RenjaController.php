@@ -619,6 +619,9 @@ class RenjaController extends BaseController
                     b.indikator_pbj,
                     b.indikator_komponen,
                     b.satuan,
+                    b.id as t_komponen_id,
+                    b.parent_id as t_komponen_roid,
+                    g.komponen_id as alokasi_komponen_id,
                     g.alokasi_0,
                     g.alokasi_1,
                     g.alokasi_2,
@@ -627,6 +630,8 @@ class RenjaController extends BaseController
                     g.target_1,
                     g.target_2,
                     g.target_3,
+                    g.sumber_dana_id,
+                    g.lokasi_suboutput_id,
                     a.lokasi_ro
                 FROM (
                         renja.mv_krisna_renja_tematik_keyword a                        
