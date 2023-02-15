@@ -562,6 +562,23 @@ class RenjaController extends BaseController
                         LEFT JOIN renja.krisnarenja_t_alokasi g ON (((a.id = g.komponen_id) AND ((a.tahun)::text = (g.tahun)::text)))
                     )
                 WHERE (b.kdtema ~~* '%008%'::text)";
+                /*( 
+                        SELECT jsonb_agg(d_1.*) AS jsonb_agg
+                        FROM ( 
+                            SELECT 
+                                c1.kode AS kode_lokus,
+                                c1.kewenangan,
+                                c1.provinsi AS provinsi_lokus,
+                                c1.kabupaten AS kabupaten_lokus,
+                                c1.nama AS nama_lokus
+                            FROM (
+                                renja.krisnarenja_t_lokasi_suboutput a1
+                                LEFT JOIN renja.krisnarenja_ref_wilayah c1 
+                                    ON (((a1.wilayah_id = c1.id) AND ((a1.tahun)::text = (c1.tahun)::text)))
+                                )
+                            WHERE ((a1.parent_id = b.id) AND ((a1.tahun)::text = (b.tahun)::text))
+                        )d_1
+                    ) AS lokasi_ro*/
             $query = "
                 SELECT
                     a.idro,
@@ -604,23 +621,7 @@ class RenjaController extends BaseController
                     g.target_1,
                     g.target_2,
                     g.target_3,
-                    ( 
-                        SELECT jsonb_agg(d_1.*) AS jsonb_agg
-                        FROM ( 
-                            SELECT 
-                                c1.kode AS kode_lokus,
-                                c1.kewenangan,
-                                c1.provinsi AS provinsi_lokus,
-                                c1.kabupaten AS kabupaten_lokus,
-                                c1.nama AS nama_lokus
-                            FROM (
-                                renja.krisnarenja_t_lokasi_suboutput a1
-                                LEFT JOIN renja.krisnarenja_ref_wilayah c1 
-                                    ON (((a1.wilayah_id = c1.id) AND ((a1.tahun)::text = (c1.tahun)::text)))
-                                )
-                            WHERE ((a1.parent_id = b.id) AND ((a1.tahun)::text = (b.tahun)::text))
-                        )d_1
-                    ) AS lokasi_ro
+                    a.lokasi_ro
                 FROM (
                         renja.mv_krisna_renja_tematik_keyword a                        
                         LEFT JOIN renja.krisnarenja_t_kmpnen b 
