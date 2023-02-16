@@ -214,16 +214,16 @@ class RenjaController extends BaseController
             ");
             DB::statement("
                 DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati;
-            ");
+            "); 
             DB::statement("
                 DROP MATERIALIZED VIEW versi_tiga.mv_krisna_realisasi_rka_komponen;
-            ");
+            "); 
             DB::statement("
                 DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword_komponen;
             ");
             DB::statement("
                 DROP MATERIALIZED VIEW renja.mv_krisna_renja_tematik_keyword;
-            ");
+            "); 
 
             /* Create 
                 renja.mv_krisna_renja_tematik_keyword
@@ -248,7 +248,6 @@ class RenjaController extends BaseController
                         a.tahun,
                         a.parent_id,
                         a.kementerian_kode,
-                        a.kode_komp_q,
                         a.kode_ro_q,
                         a.kode_kro_q,                    
                         a.kode_keg_q,
@@ -288,8 +287,7 @@ class RenjaController extends BaseController
                         a.target_3,
                         a.lokasi_ro,
                         b.realisasi_ro,
-                        b.realisasi_komponen,
-                        b.sumber_dana
+                        b.realisasi_komponen
                         FROM (renja.mv_krisna_renja_tematik_keyword_komponen a
                             LEFT JOIN ( SELECT aa.id,
                                 aa.rka_ro_kode,
@@ -323,7 +321,7 @@ class RenjaController extends BaseController
                                 FROM (versi_tiga.krisna_realisasi_rka_komponen aa
                                     LEFT JOIN versi_tiga.krisna_sumber_dana bb 
                                         ON ((bb.id_krisna = (aa.sumber_dana_id)::integer)))
-                                        ) b(id, rka_ro_kode, tahun, kode_kl, nama_kl, kode_program, kode_kegiatan, kode_kro, kode_ro, kode_lro, realisasi_ro, realisasi_komponen, komponen_kode, komponen_nama, sumber_dana_id, created_at, updated_at, id_1, id_krisna, alias, id_sakti, sumber_dana, created_at_1, updated_at_1) ON (((a.kode_ro = (b.rka_ro_kode)::text) AND (a.komponen_kode = (b.komponen_kode)::text))));               
+                                        ) b(id, rka_ro_kode, tahun, kode_kl, nama_kl, kode_program, kode_kegiatan, kode_kro, kode_ro, kode_lro, realisasi_ro, realisasi_komponen, komponen_kode, komponen_nama, sumber_dana_id, created_at, updated_at, id_1, id_krisna, alias, id_sakti, sumber_dana, created_at_1, updated_at_1) ON (((a.kode_ro_q = (b.rka_ro_kode)::text) AND (a.komponen_kode = (b.komponen_kode)::text))));               
             ");            
             DB::statement("
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati AS
@@ -597,7 +595,6 @@ class RenjaController extends BaseController
                     a.tahun,
                     b.parent_id,
                     a.kementerian_kode,
-                    a.kode_komp_q,
                     a.kode_ro_q,
                     a.kode_kro_q,                    
                     a.kode_keg_q,
