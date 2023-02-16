@@ -248,7 +248,11 @@ class RenjaController extends BaseController
                         a.tahun,
                         a.parent_id,
                         a.kementerian_kode,
-                        a.kode_ro,
+                        a.kode_komp_q,
+                        a.kode_ro_q,
+                        a.kode_kro_q,                    
+                        a.kode_keg_q,
+                        a.kode_prog_q,
                         a.kdunit,
                         a.program_kode,
                         a.kegiatan_kode,
@@ -259,8 +263,7 @@ class RenjaController extends BaseController
                         a.kdtema,
                         a.sat,
                         a.output_nama,
-                        a.satuan_output,
-                        
+                        a.satuan_output,                        
                         a.lokasi,
                         a.kegiatan_nama,
                         a.nmunit,
@@ -297,6 +300,11 @@ class RenjaController extends BaseController
                                 aa.kode_kegiatan,
                                 aa.kode_kro,
                                 aa.kode_ro,
+                                aa.kode_komp_q,
+                                aa.kode_ro_q,
+                                aa.kode_kro_q,                    
+                                aa.kode_keg_q,
+                                aa.kode_prog_q,
                                 aa.kode_lro,
                                 (aa.alokasi_lro / 1000) AS realisasi_ro,
                                 (aa.alokasi / 1000) AS realisasi_komponen,
@@ -340,7 +348,10 @@ class RenjaController extends BaseController
                         a.tahun,
                         a.parent_id,
                         a.kementerian_kode,
-                        a.kode_ro,
+                        a.kode_ro_q,
+                        a.kode_kro_q,                    
+                        a.kode_keg_q,
+                        a.kode_prog_q,
                         a.kdunit,
                         a.program_kode,
                         a.kegiatan_kode,
@@ -351,8 +362,7 @@ class RenjaController extends BaseController
                         a.kdtema,
                         a.sat,
                         a.output_nama,
-                        a.satuan_output,
-                       
+                        a.satuan_output,                       
                         a.lokasi,
                         a.kegiatan_nama,
                         a.nmunit,
@@ -431,8 +441,7 @@ class RenjaController extends BaseController
                         b.kegiatan_kode,
                         b.suboutput_kode,
                         b.output_nama,
-                        b.satuan_output,
-                        
+                        b.satuan_output,                        
                         b.lokasi,
                         b.kegiatan_nama,
                         b.nmunit,
@@ -459,13 +468,7 @@ class RenjaController extends BaseController
                                 (a.wilayah_id = c.id) AND ((a.tahun)::text = (c.tahun)::text))
                             ));             
                                 ");
-
-
-
-        
-            
-            
-        };
+                            };
         RenjaUpdateDate::where("name","keyword")->update(["name"=>"keyword"]);
         return $this->returnJsonSuccess("Success Reload Rincian Output By Keywords", ["updated_at"=>RenjaUpdateDate::where("name","keyword")->first()->updated_at]);
     }
@@ -490,7 +493,10 @@ class RenjaController extends BaseController
                     a.tahun,
                     a.parent_id,
                     a.kddept AS kementerian_kode,
-                    concat(a.kddept, a.kdunit, a.kdprogram, a.kdgiat, a.kdoutput, a.kdsoutput, a.kdkmpnen) AS kode_ro,
+                    concat(a.thang,a.kddept,a.kdprogram, a.kdgiat, a.kdoutput, a.kdsoutput) AS kode_ro_q,                    
+                    concat(a.thang,a.kddept,a.kdprogram, a.kdgiat, a.kdoutput) AS kode_kro_q,                    
+                    concat(a.thang,a.kddept,a.kdprogram, a.kdgiat) AS kode_keg_q,
+                    concat(a.thang,a.kddept,a.kdprogram) AS kode_prog_q,
                     a.kdunit,
                     a.kdprogram AS program_kode,
                     a.kdgiat AS kegiatan_kode,
@@ -516,8 +522,7 @@ class RenjaController extends BaseController
                     b.kdtema,
                     b.sat,
                     c.nmoutput AS output_nama,
-                    c.satuan AS satuan_output,
-                    
+                    c.satuan AS satuan_output,                    
                     c.lokasi,
                     d.nmgiat AS kegiatan_nama,
                     d.nmunit,
@@ -592,7 +597,11 @@ class RenjaController extends BaseController
                     a.tahun,
                     b.parent_id,
                     a.kementerian_kode,
-                    a.kode_ro,
+                    a.kode_komp_q,
+                    a.kode_ro_q,
+                    a.kode_kro_q,                    
+                    a.kode_keg_q,
+                    a.kode_prog_q,
                     b.kdunit,
                     a.program_kode,
                     a.kegiatan_kode,
@@ -648,10 +657,10 @@ class RenjaController extends BaseController
                 b.tahun,
                 b.thang,
                 b.kddept AS kementerian_kode,
-                concat(b.thang, b.kddept, b.kdprogram, b.kdgiat, b.kdoutput, b.kdsoutput) AS kode_ro,
-                concat(b.thang, b.kddept, b.kdprogram, b.kdgiat, b.kdoutput) AS kode_kro,
-                concat(b.thang, b.kddept, b.kdprogram, b.kdgiat) AS kode_keg,
-                concat(b.thang, b.kddept, b.kdprogram) AS kode_prog,
+                concat(b.thang, b.kddept, b.kdprogram, b.kdgiat, b.kdoutput, b.kdsoutput) AS kode_ro_q,
+                concat(b.thang, b.kddept, b.kdprogram, b.kdgiat, b.kdoutput) AS kode_kro_q,
+                concat(b.thang, b.kddept, b.kdprogram, b.kdgiat) AS kode_keg_q,
+                concat(b.thang, b.kddept, b.kdprogram) AS kode_prog_q,
                 b.nmsoutput AS suboutput_nama,
                 b.alokasi_total,
                 c.alokasi_total as alokasi_kro,
