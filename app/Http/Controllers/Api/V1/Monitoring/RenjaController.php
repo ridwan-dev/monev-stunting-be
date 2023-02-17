@@ -19,6 +19,7 @@ use App\Models\Kinerja\RenjaRoKeyword;
 use App\Models\Kinerja\MvRenjaTematikKeyword;
 use App\Models\Kinerja\MvRenjaTematikKeywordkomponen;
 use App\Models\Kinerja\MvRenjaTematikKeywordSepakati;
+use App\Models\V3\KrisnaIntegrasi\MvKrisnaRealisasiRkaKomponen;
 use App\Models\Kinerja\RenjaUpdateDate;
 use Illuminate\Support\Facades\Validator;
 
@@ -243,7 +244,8 @@ class RenjaController extends BaseController
             /*a.alokasi_totaloutput,*/
             DB::statement("
                 CREATE MATERIALIZED VIEW versi_tiga.mv_krisna_realisasi_rka_komponen AS
-                    SELECT a.idro,
+                    SELECT 
+                        a.idro,
                         a.thang,
                         a.tahun,
                         a.parent_id,
@@ -287,42 +289,52 @@ class RenjaController extends BaseController
                         a.target_3,
                         a.lokasi_ro,
                         b.realisasi_ro,
-                        b.realisasi_komponen
-                        FROM (renja.mv_krisna_renja_tematik_keyword_komponen a
-                            LEFT JOIN ( SELECT aa.id,
-                                aa.rka_ro_kode,
-                                aa.tahun,
-                                aa.kode_kl,
-                                aa.nama_kl,
-                                aa.kode_program,
-                                aa.kode_kegiatan,
-                                aa.kode_kro,
-                                aa.kode_ro,
-                                aa.kode_komp_q,
-                                aa.kode_ro_q,
-                                aa.kode_kro_q,                    
-                                aa.kode_keg_q,
-                                aa.kode_prog_q,
-                                aa.kode_lro,
-                                (aa.alokasi_lro / 1000) AS realisasi_ro,
-                                (aa.alokasi / 1000) AS realisasi_komponen,
-                                aa.komponen_kode,
-                                aa.komponen_nama,
-                                aa.sumber_dana_id,
-                                aa.created_at,
-                                aa.updated_at,
-                                bb.id,
-                                bb.id_krisna,
-                                bb.alias,
-                                bb.id_sakti,
-                                bb.sumber_dana,
-                                bb.created_at,
-                                bb.updated_at
-                                FROM (versi_tiga.krisna_realisasi_rka_komponen aa
-                                    LEFT JOIN versi_tiga.krisna_sumber_dana bb 
-                                        ON ((bb.id_krisna = (aa.sumber_dana_id)::integer)))
-                                        ) b(id, rka_ro_kode, tahun, kode_kl, nama_kl, kode_program, kode_kegiatan, kode_kro, kode_ro, kode_lro, realisasi_ro, realisasi_komponen, komponen_kode, komponen_nama, sumber_dana_id, created_at, updated_at, id_1, id_krisna, alias, id_sakti, sumber_dana, created_at_1, updated_at_1) ON (((a.kode_ro_q = (b.rka_ro_kode)::text) AND (a.komponen_kode = (b.komponen_kode)::text))));               
-            ");            
+                        b.realisasi_komponen,
+						b.sumber_dana
+                        FROM renja.mv_krisna_renja_tematik_keyword_komponen a
+						LEFT JOIN ( 
+							SELECT 
+								aa.id,
+								aa.rka_ro_kode,
+								aa.tahun,
+								aa.kode_kl,
+								aa.nama_kl,
+								aa.kode_program,
+								aa.kode_kegiatan,
+								aa.kode_kro,
+								aa.kode_ro,
+								aa.kode_komp_q,
+								aa.kode_ro_q,
+								aa.kode_kro_q,                    
+								aa.kode_keg_q,
+								aa.kode_prog_q,
+								aa.kode_lro,
+								(aa.alokasi_lro / 1000) AS realisasi_ro,
+								(aa.alokasi / 1000) AS realisasi_komponen,
+								aa.komponen_kode,
+								aa.komponen_nama,
+								aa.sumber_dana_id,
+								aa.created_at,
+								aa.updated_at,
+								bb.id,
+								bb.id_krisna,
+								bb.alias,
+								bb.id_sakti,
+								bb.sumber_dana,
+								bb.created_at,
+								bb.updated_at
+							FROM versi_tiga.krisna_realisasi_rka_komponen aa
+							LEFT JOIN versi_tiga.krisna_sumber_dana bb 
+								ON bb.id_krisna = (aa.sumber_dana_id)::integer
+							) b 
+								ON a.kode_ro_q = b.kode_ro_q AND a.komponen_kode = b.komponen_kode            
+            ");  
+            /*
+            CREATE MATERIALIZED VIEW versi_tiga.mv_krisna_realisasi_rka_komponen_alokasi_prog
+            CREATE MATERIALIZED VIEW versi_tiga.mv_krisna_realisasi_rka_komponen_alokasi_keg
+            CREATE MATERIALIZED VIEW versi_tiga.mv_krisna_realisasi_rka_komponen_alokasi_kro
+            */
+            
             DB::statement("
                 CREATE MATERIALIZED VIEW renja.mv_krisna_renja_tematik_sepakati AS
                     SELECT * FROM renja.mv_krisna_renja_tematik_keyword_komponen aa
@@ -818,6 +830,71 @@ class RenjaController extends BaseController
 
 
     public function getKrisnaRenja(Request $request){
+        $tahun = now()->year;
+        $kl = [];
+        $intervensi = [];
+        $search = "";
+
+        if($request->has('tahun') && !empty($request->tahun)){
+            $tahun = $request->tahun;
+        }
+        if($request->has('kl') && !empty($request->kl)){
+            $kl = $request->kl;
+        }
+        if($request->has('search') && !empty($request->search)){
+            $search = strtolower($request->search);
+        }
+        //$allKementerian = MvKrisnaRealisasiRkaKomponen::select('kementerian_kode','kementerian_nama')->groupBy('kementerian_kode','kementerian_nama')->get();
+        $dataRenja = MvKrisnaRealisasiRkaKomponen::select([
+            "tahun",
+            "kementerian_kode",
+            "program_kode",
+            "kegiatan_kode",
+            "output_kode",
+            "suboutput_kode",
+            "suboutput_nama",
+            "kdtema",
+            "sat",
+            "output_nama",
+            "kegiatan_nama",
+            "program_nama",
+            "kementerian_nama",
+            "kementerian_nama_alias",
+            "komponen_kode",
+            "komponen_nama",
+            "jenis_komponen",
+            "indikator_pbj",
+            "indikator_komponen",
+            "satuan",
+            "target_0",
+            "lokasi_ro",
+            "alokasi_total",
+            "alokasi_0",
+            "realisasi_ro",
+            "realisasi_komponen",
+            "sumber_dana"
+        ])
+        ->where(function($q) use($tahun, $kl){
+            if($tahun != "all"){
+                $q->where('tahun', $tahun);
+            }          
+            if($kl != "all"){
+                $q->whereIn('kementerian_kode', $kl);
+            }            
+        })
+        ->where(function ($q) use($search){
+            if(!empty($search)){
+                $q->where(\DB::raw('LOWER(program_nama)'), 'LIKE', "%$search%");
+                $q->orWhere(\DB::raw('LOWER(kegiatan_nama)'), 'LIKE', "%$search%");
+                $q->orWhere(\DB::raw('LOWER(output_nama)'), 'LIKE', "%$search%");
+                $q->orWhere(\DB::raw('LOWER(suboutput_nama)'), 'LIKE', "%$search%");
+            }
+        })
+        ->get();
+        return $this->returnJsonSuccess("Data fetched successfully", $dataRenja);
+    }
+
+    public function getKrisnaRenjaOLD(Request $request){
         /* 
             Model KomponenRenja
         */
@@ -836,9 +913,7 @@ class RenjaController extends BaseController
         if($request->has('search') && !empty($request->search)){
             $search = strtolower($request->search);
         }
-        //$allKementerian = KomponenRenja::select('kementerian_kode','kementerian_nama')->groupBy('kementerian_kode','kementerian_nama')->get();
         $allKementerian = MvRenjaTematikKeywordSepakati::select('kementerian_kode','kementerian_nama')->groupBy('kementerian_kode','kementerian_nama')->get();
-        //$dataRenja = KomponenRenja::where(function($q) use($tahun, $kl){
         $dataRenja = MvRenjaTematikKeywordSepakati::where(function($q) use($tahun, $kl){
             if($tahun != "all"){
                 $q->where('tahun', $tahun);
@@ -859,26 +934,8 @@ class RenjaController extends BaseController
         
         $renjaClone = clone $dataRenja;
         $kementerianCount = $renjaClone->pluck('kementerian_kode')->unique()->values()->count();        
-        //$total_alokasi = KomponenRenja::select(\DB::raw('SUM(alokasi_totaloutput::numeric) as total_alokasi'))->where(function($q) use($tahun, $kl){
-        /* $total_alokasi = MvRenjaTematikKeywordSepakati::select(\DB::raw('SUM(alokasi_totaloutput::numeric) as total_alokasi'))->where(function($q) use($tahun, $kl){
-            if($tahun != "all"){
-                $q->where('tahun', $tahun);
-            }          
-            if($kl != "all"){
-                $q->whereIn('kementerian_kode', $kl);
-            }            
-        })
-        ->where(function ($q) use($search){
-            if(!empty($search)){
-                $q->where(\DB::raw('LOWER(program_nama)'), 'LIKE', "%$search%");
-                $q->orWhere(\DB::raw('LOWER(kegiatan_nama)'), 'LIKE', "%$search%");
-                $q->orWhere(\DB::raw('LOWER(output_nama)'), 'LIKE', "%$search%");
-                $q->orWhere(\DB::raw('LOWER(suboutput_nama)'), 'LIKE', "%$search%");
-            }
-        })->first(); */
-
         $tile = new \stdClass;
-        //$tile->total_alokasi = $total_alokasi->total_alokasi;
+        
         $komponen = [];
         $lsKomponen = $renjaClone->map->only(['tahun','kementerian_kode','program_kode', 'kegiatan_kode', 'output_kode', 'suboutput_kode','suboutput_nama','komponen_kode','komponen_nama'])->unique()->values();
         $tile = new \stdClass;
