@@ -245,14 +245,13 @@ class RenjaController extends BaseController
             ");
             DB::statement("
                 CREATE MATERIALIZED VIEW versi_tiga.mv_krisna_renjarka_rokomp_lokasi AS
-                SELECT 
-                    a.tahun,
+                SELECT a.tahun,
                     a.kementerian_kode,
                     a.kode_ro_q,
                     a.kode_kro_q,
                     a.kode_keg_q,
                     a.kode_prog_q,
-                    a.suboutput_nama,    
+                    a.suboutput_nama,
                     a.alokasi_kro,
                     a.kdtema,
                     a.sat,
@@ -261,7 +260,7 @@ class RenjaController extends BaseController
                     a.kegiatan_kode,
                     a.suboutput_kode,
                     a.output_nama,
-                    a.satuan_output,    
+                    a.satuan_output,
                     a.kegiatan_nama,
                     a.nmprogout,
                     a.program_nama,
@@ -273,27 +272,24 @@ class RenjaController extends BaseController
                     a.tipe_nama,
                     a.lokasi,
                     a.lokasi_ro,
-                    ( SELECT 
-                        jsonb_agg(
-                            json_build_object('kode_lokasi', cc.kdlokasisoutput, 'nama_lokasi', cc.nmlokasisoutput, 'target', cc.target_0, 'alokasi', cc.alokasi_total)
-                            ) AS jsonb_agg
-                    FROM renja.krisnarenja_t_lokasi_suboutput cc
-                    WHERE ((cc.kode_ro_q)::text = a.kode_ro_q)) 
-                    AS lokasi_alokasi,	
+                    ( SELECT jsonb_agg(json_build_object('kode_lokasi', cc.kdlokasisoutput, 'nama_lokasi', cc.nmlokasisoutput, 'target', cc.target_0, 'alokasi', cc.alokasi_total)) AS jsonb_agg
+                        FROM renja.krisnarenja_t_lokasi_suboutput cc
+                        WHERE ((cc.kode_ro_q)::text = a.kode_ro_q)) AS lokasi_alokasi,
                     a.alokasi_total,
-                    ( SELECT sum(alokasi_lro/1000) AS realisasi_ro FROM versi_tiga.krisna_realisasi_rka ee
-                    WHERE ((ee.kode_ro_q)::text = a.kode_ro_q)) 
-                    AS realisasi_rka_ro,	
-                    ( SELECT jsonb_agg(
-                    json_build_object('kdkmpnen', kdkmpnen, 'nmkmpnen', nmkmpnen, 'jenis_komponen', jenis_komponen, 'indikator_pbj', indikator_pbj,'indikator_komponen',indikator_komponen,'satuan',satuan,'sumber_dana_ids',sumber_dana_ids)
-                    ) AS komp FROM renja.krisnarenja_t_kmpnen ff
-                    WHERE ((ff.kode_ro_q)::text = a.kode_ro_q)) 
-                    AS komponen,
-                    ( SELECT jsonb_agg(attrs) AS realisasi_komp FROM versi_tiga.krisna_realisasi_rka dd
-                    WHERE ((dd.kode_ro_q)::text = a.kode_ro_q)) 
-                    AS realisasi_rka_komp	  
-                FROM ( SELECT   
-                            mv_krisna_renja_tematik_keyword.tahun,
+                    ( SELECT sum((ee.alokasi_lro / 1000)) AS realisasi_ro
+                        FROM versi_tiga.krisna_realisasi_rka ee
+                        WHERE ((ee.kode_ro_q)::text = a.kode_ro_q)) AS realisasi_rka_ro,
+                    ( SELECT 
+                        jsonb_agg(json_build_object('kdkmpnen', ff.kdkmpnen, 'nmkmpnen', ff.nmkmpnen, 'jenis_komponen', ff.jenis_komponen, 'indikator_pbj', ff.indikator_pbj, 'indikator_komponen', ff.indikator_komponen, 'satuan', ff.satuan, 'sumber_dana_ids', ff.sumber_dana_ids, 'sumber_dana_dana_lok',aaa.sumber_dana_id,'alokasi_total', aaa.alokasi_0,'target', aaa.target_0)) AS komp
+                    FROM renja.krisnarenja_t_kmpnen ff
+                    Left Join renja.krisnarenja_t_alokasi aaa
+                        ON aaa.komponen_id = ff.id
+                        AND aaa.tahun = ff.tahun          
+                        WHERE ((ff.kode_ro_q)::text = a.kode_ro_q)) AS komponen,
+                    ( SELECT jsonb_agg(dd.attrs) AS realisasi_komp
+                        FROM versi_tiga.krisna_realisasi_rka dd
+                        WHERE ((dd.kode_ro_q)::text = a.kode_ro_q)) AS realisasi_rka_komp
+                FROM ( SELECT mv_krisna_renja_tematik_keyword.tahun,
                             mv_krisna_renja_tematik_keyword.kementerian_kode,
                             mv_krisna_renja_tematik_keyword.kode_ro_q,
                             mv_krisna_renja_tematik_keyword.kode_kro_q,
@@ -321,8 +317,7 @@ class RenjaController extends BaseController
                             mv_krisna_renja_tematik_keyword.tipe_id,
                             mv_krisna_renja_tematik_keyword.tipe_nama,
                             mv_krisna_renja_tematik_keyword.lokasi_ro
-                        FROM renja.mv_krisna_renja_tematik_keyword
-                        ) a;        
+                            FROM renja.mv_krisna_renja_tematik_keyword) a;        
             ");
             /*a.alokasi_totaloutput,*/
             DB::statement("
