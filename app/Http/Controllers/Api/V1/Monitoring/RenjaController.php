@@ -943,7 +943,8 @@ class RenjaController extends BaseController
             "alokasi_total",
             "realisasi_rka_ro",
             "komponen",
-            "realisasi_rka_komp"
+            "realisasi_rka_komp",
+            "lokasi_alokasi"
         ])
         ->where(function($q) use($tahun, $kl){
             if($tahun != "all"){
