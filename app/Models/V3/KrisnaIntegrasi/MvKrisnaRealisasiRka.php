@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class MvKrisnaRealisasiRka extends Model
 {
     use HasFactory;
-    protected $table = 'versi_tiga.mv_krisna_realisasi_rka_komponen';
+    protected $table = 'versi_tiga.mv_krisna_realisasi_rka';
     protected $casts = [
         'lokasi_ro' => 'array',
         'satuan_output' => 'array',
