@@ -286,9 +286,10 @@ class RenjaController extends BaseController
                         ON aaa.komponen_id = ff.id
                         AND aaa.tahun = ff.tahun          
                         WHERE ((ff.kode_ro_q)::text = a.kode_ro_q)) AS komponen,
-                    ( SELECT jsonb_agg(dd.attrs) AS realisasi_komp
-                        FROM versi_tiga.krisna_realisasi_rka dd
-                        WHERE ((dd.kode_ro_q)::text = a.kode_ro_q)) AS realisasi_rka_komp
+                    (SELECT 
+                        jsonb_agg(json_build_object('kode_ro_lro',dd.kode_lro,'alokasi_ro_lro',dd.alokasi_lro,'ro_komponen',dd.attrs)) AS realisasi_komp
+                    FROM versi_tiga.krisna_realisasi_rka dd
+                    WHERE ((dd.kode_ro_q)::text = a.kode_ro_q)) AS realisasi_rka_komp
                 FROM ( SELECT mv_krisna_renja_tematik_keyword.tahun,
                             mv_krisna_renja_tematik_keyword.kementerian_kode,
                             mv_krisna_renja_tematik_keyword.kode_ro_q,
@@ -924,6 +925,7 @@ class RenjaController extends BaseController
         }
         $dataRenja = MvKrisnaRealisasiRkaRoKompLokasi::select([
             "tahun",
+            "kode_ro_q",
             "kementerian_kode",
             "program_kode",
             "kegiatan_kode",
