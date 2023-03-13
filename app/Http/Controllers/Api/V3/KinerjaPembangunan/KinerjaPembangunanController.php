@@ -42,10 +42,22 @@ class KinerjaPembangunanController extends BaseController
          ) as t(a)"
       );
       
+      $field_y = DB::select("
+         select * from versi_tiga.kinerja_pembangunan_istilah 
+         where publish = 'Y'
+      ");
+      $field_n = DB::select("
+         select * from versi_tiga.kinerja_pembangunan_istilah 
+         where publish = 'N' 
+         and tahun->>'tahun' = '".$request->tahun."'
+         and tahun->>'semester' = '".$request->semester."'
+      ");
       $result = [
          "detail" => json_decode($results[0]->data),
-         "field" => KinerjaPembangunanRoIstilah::where("publish","Y")->get(),
+         "field" => array_merge($field_n,$field_y),
       ];
+      
+      //dd(array_merge($field_n,$field_y));
       return $this->returnJsonSuccess("Data fetched successfully", $result);
    }
 
